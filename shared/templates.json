@@ -1,0 +1,535 @@
+{
+  "base": {
+    "name": "",
+    "logo": null,
+    "tagline": "",
+    "description": "",
+    "language": "ru",
+    "currency": "сум",
+    "theme": {
+      "preset": "gold",
+      "primary": "#F5A524",
+      "primary2": "#FFD36B",
+      "bg": "#07070A",
+      "surface": "#121218",
+      "text": "#F5F5F7",
+      "muted": "#9A9AA8",
+      "radius": 18,
+      "font": "inter",
+      "headingFont": "montserrat",
+      "bgStyle": "glow",
+      "bgImage": null,
+      "cardStyle": "glass"
+    },
+    "hero": {
+      "title": "",
+      "subtitle": "",
+      "tags": "",
+      "button": "Перейти в каталог",
+      "image": null,
+      "art": "Sparkles",
+      "layout": "split"
+    },
+    "banners": [],
+    "sections": [
+      { "id": "hero", "visible": true },
+      { "id": "categories", "visible": true },
+      { "id": "popular", "visible": true },
+      { "id": "banners", "visible": true },
+      { "id": "features", "visible": true },
+      { "id": "new", "visible": true },
+      { "id": "about", "visible": false },
+      { "id": "contacts", "visible": false }
+    ],
+    "features": [],
+    "pages": {
+      "catalog": { "title": "Каталог", "subtitle": "" },
+      "product": { "showSpecs": true, "showSimilar": true, "note": "" },
+      "about": { "title": "О магазине", "text": "", "image": null },
+      "delivery": { "title": "Доставка и оплата", "text": "", "items": [] },
+      "faq": { "title": "Частые вопросы", "items": [] },
+      "contacts": { "title": "Контакты", "text": "" }
+    },
+    "contacts": { "telegram": "", "phone": "", "email": "", "address": "", "hours": "" },
+    "social": { "instagram": "", "telegramChannel": "", "facebook": "", "youtube": "", "tiktok": "", "whatsapp": "", "website": "" },
+    "order": {
+      "button": "Заказать в Telegram",
+      "message": "Здравствуйте! Хочу заказать:\n{product}\nЦена: {price}\n{link}"
+    }
+  },
+  "templates": [
+    {
+      "key": "gaming",
+      "name": "Gaming",
+      "emoji": "🎮",
+      "icon": "Gamepad2",
+      "short": "Игры, аккаунты, валюта",
+      "description": "Тёмный неоновый стиль для игровых товаров: UC, аккаунты, буст, подписки.",
+      "config": {
+        "tagline": "Игровые товары и услуги",
+        "description": "Надёжный магазин игровых товаров. Быстрая доставка и поддержка 24/7.",
+        "theme": { "preset": "neon", "primary": "#8B5CF6", "primary2": "#D946EF", "bg": "#07060D", "surface": "#141022", "muted": "#A29BBF", "headingFont": "russo", "radius": 18, "bgStyle": "glow", "cardStyle": "glass" },
+        "hero": { "title": "Игровые товары и услуги", "subtitle": "Пополнение и аккаунты за 5 минут — с гарантией", "tags": "UC • Аккаунты • Буст • VPN • Подписки", "art": "Gamepad2" },
+        "features": [
+          { "icon": "Zap", "text": "Быстрая выдача" },
+          { "icon": "ShieldCheck", "text": "Гарантия" },
+          { "icon": "Headphones", "text": "Поддержка 24/7" }
+        ],
+        "pages": {
+          "about": { "title": "О магазине", "text": "Мы продаём игровую валюту, аккаунты и услуги буста с 2021 года. Более 10 000 выполненных заказов.\n\nВсе пополнения проходят через официальные каналы — ваш аккаунт в безопасности.", "image": null },
+          "delivery": { "title": "Выдача и оплата", "text": "Цифровые товары выдаются онлайн, без доставки.", "items": [
+            { "icon": "Zap", "title": "5–15 минут", "text": "Среднее время выдачи UC и подписок" },
+            { "icon": "CreditCard", "title": "Click, Payme, карта", "text": "Оплата после подтверждения заказа" },
+            { "icon": "ShieldCheck", "title": "Гарантия", "text": "Возврат средств, если заказ не выполнен" }
+          ] },
+          "faq": { "title": "Частые вопросы", "items": [
+            { "q": "Как получить UC?", "a": "Нажмите «Заказать в Telegram», отправьте свой ID игрока — и мы пополним счёт." },
+            { "q": "Это безопасно?", "a": "Да. Мы не просим пароль от аккаунта для пополнения." },
+            { "q": "Сколько ждать?", "a": "Обычно 5–15 минут после оплаты." }
+          ] }
+        }
+      },
+      "categories": [
+        { "name": "UC", "icon": "Gem" },
+        { "name": "Аккаунты", "icon": "Gamepad2" },
+        { "name": "Буст", "icon": "Rocket" },
+        { "name": "VPN", "icon": "ShieldCheck" }
+      ],
+      "products": [
+        { "name": "UC PUBG Mobile", "price": 7000, "from": true, "cat": 0, "icon": "Gem", "popular": true, "desc": "Пополнение UC на ваш аккаунт. Быстро, безопасно, с гарантией.", "specs": [["Игра", "PUBG Mobile"], ["Выдача", "5–15 минут"], ["Нужно", "ID игрока"]] },
+        { "name": "Аккаунт PUBG", "price": 99000, "from": true, "cat": 1, "icon": "Gamepad2", "popular": true, "desc": "Прокачанные аккаунты с редкими скинами. Полный доступ и смена почты.", "specs": [["Уровень", "50+"], ["Скины", "Мифические"], ["Привязка", "Смена на вашу почту"]] },
+        { "name": "Буст ранга", "price": 49000, "from": true, "cat": 2, "icon": "Rocket", "popular": true, "desc": "Поднимем ваш ранг с помощью опытных игроков.", "specs": [["Срок", "1–3 дня"], ["Ранг", "до Завоевателя"]] },
+        { "name": "VPN Premium", "price": 29000, "cat": 3, "icon": "ShieldCheck", "popular": false, "desc": "Низкий пинг и стабильное соединение для онлайн-игр.", "specs": [["Срок", "1 месяц"], ["Устройства", "до 3"]] },
+        { "name": "Алмазы Free Fire", "price": 12000, "from": true, "cat": 0, "icon": "Diamond", "popular": false, "desc": "Пополнение алмазов Free Fire по ID.", "specs": [["Выдача", "до 10 минут"]] },
+        { "name": "Пополнение Steam", "price": 50000, "from": true, "cat": 0, "icon": "Joystick", "popular": false, "desc": "Пополнение кошелька Steam в любой сумме.", "specs": [["Регион", "Любой"], ["Комиссия", "0%"]] }
+      ]
+    },
+    {
+      "key": "tech",
+      "name": "Tech",
+      "emoji": "💻",
+      "icon": "Monitor",
+      "short": "Электроника и гаджеты",
+      "description": "Чистый технологичный дизайн с синим свечением для смартфонов, ноутбуков и аксессуаров.",
+      "config": {
+        "tagline": "Электроника и гаджеты",
+        "description": "Оригинальная техника с официальной гарантией и доставкой по Ташкенту.",
+        "theme": { "preset": "ocean", "primary": "#3B82F6", "primary2": "#22D3EE", "bg": "#05070D", "surface": "#0F1420", "muted": "#94A3B8", "headingFont": "manrope", "radius": 16, "bgStyle": "glow", "cardStyle": "glass" },
+        "hero": { "title": "Электроника и гаджеты", "subtitle": "Только оригинальная техника с гарантией", "tags": "Смартфоны • Ноутбуки • Планшеты • Аксессуары", "art": "Smartphone" },
+        "features": [
+          { "icon": "BadgeCheck", "text": "Оригинал 100%" },
+          { "icon": "ShieldCheck", "text": "Гарантия" },
+          { "icon": "Truck", "text": "Доставка по Ташкенту" }
+        ],
+        "pages": {
+          "about": { "title": "О магазине", "text": "Мы продаём только оригинальную технику от официальных поставщиков. На каждый товар — гарантия и чек.", "image": null },
+          "delivery": { "title": "Доставка и оплата", "text": "Доставляем по Ташкенту в день заказа, по регионам — 1–3 дня.", "items": [
+            { "icon": "Truck", "title": "Ташкент — бесплатно", "text": "При заказе от 1 000 000 сум" },
+            { "icon": "MapPin", "title": "Регионы", "text": "1–3 дня, оплата при получении" },
+            { "icon": "CreditCard", "title": "Оплата", "text": "Наличные, Click, Payme, рассрочка" }
+          ] },
+          "faq": { "title": "Частые вопросы", "items": [
+            { "q": "Техника оригинальная?", "a": "Да, вся техника официальная, с серийными номерами и гарантией." },
+            { "q": "Есть рассрочка?", "a": "Да, рассрочка на 3–12 месяцев через партнёров." },
+            { "q": "Можно проверить при получении?", "a": "Конечно, курьер подождёт, пока вы проверите товар." }
+          ] }
+        }
+      },
+      "categories": [
+        { "name": "Смартфоны", "icon": "Smartphone" },
+        { "name": "Ноутбуки", "icon": "Laptop" },
+        { "name": "Планшеты", "icon": "Tablet" },
+        { "name": "Аксессуары", "icon": "Headphones" }
+      ],
+      "products": [
+        { "name": "Смартфон Pro 16", "price": 16990000, "cat": 0, "icon": "Smartphone", "popular": true, "desc": "Флагман с камерой 48 Мп, титановым корпусом и дисплеем 120 Гц.", "specs": [["Память", "256 ГБ"], ["Экран", "6.3\" OLED 120 Гц"], ["Камера", "48 Мп"], ["Гарантия", "1 год"]] },
+        { "name": "Ноутбук Air 13", "price": 16990000, "from": true, "cat": 1, "icon": "Laptop", "popular": true, "desc": "Лёгкий и тихий ноутбук для работы и учёбы, до 18 часов автономности.", "specs": [["ОЗУ", "16 ГБ"], ["SSD", "512 ГБ"], ["Вес", "1.24 кг"]] },
+        { "name": "Наушники Pods Pro 2", "price": 2490000, "cat": 3, "icon": "Headphones", "popular": true, "desc": "Активное шумоподавление и пространственный звук.", "specs": [["Автономность", "до 30 ч"], ["Защита", "IP54"]] },
+        { "name": "Планшет Air 11", "price": 8990000, "cat": 2, "icon": "Tablet", "popular": false, "desc": "Большой яркий экран для учёбы, творчества и фильмов.", "specs": [["Экран", "11\""], ["Память", "128 ГБ"]] },
+        { "name": "Смарт-часы Watch 9", "price": 3290000, "oldPrice": 3790000, "cat": 3, "icon": "Watch", "popular": false, "desc": "Здоровье, спорт и уведомления на запястье.", "specs": [["Корпус", "45 мм"], ["Защита", "50 м"]] },
+        { "name": "Зарядка 65W GaN", "price": 349000, "cat": 3, "icon": "Zap", "popular": false, "desc": "Компактная быстрая зарядка для телефона и ноутбука.", "specs": [["Мощность", "65 Вт"], ["Порты", "2× USB-C, USB-A"]] }
+      ]
+    },
+    {
+      "key": "fashion",
+      "name": "Fashion",
+      "emoji": "👕",
+      "icon": "Shirt",
+      "short": "Одежда и обувь",
+      "description": "Смелый оранжевый акцент и крупная типографика для магазинов одежды и обуви.",
+      "config": {
+        "tagline": "Одежда и обувь",
+        "description": "Брендовая одежда, обувь и аксессуары. Обмен и возврат в течение 14 дней.",
+        "theme": { "preset": "sunset", "primary": "#F97316", "primary2": "#FDBA74", "bg": "#0A0705", "surface": "#17110D", "muted": "#B3A397", "headingFont": "oswald", "radius": 14, "bgStyle": "glow", "cardStyle": "solid" },
+        "hero": { "title": "Одежда и обувь", "subtitle": "Новая коллекция уже в наличии", "tags": "Мужская • Женская • Детская • Брендовая коллекция", "art": "Shirt" },
+        "features": [
+          { "icon": "Tag", "text": "Бренды" },
+          { "icon": "Award", "text": "Качество" },
+          { "icon": "RefreshCw", "text": "Обмен и возврат" }
+        ],
+        "pages": {
+          "about": { "title": "О магазине", "text": "Мы привозим одежду и обувь напрямую от поставщиков. Следим за трендами и обновляем коллекцию каждый месяц.", "image": null },
+          "delivery": { "title": "Доставка и оплата", "text": "Примерка при получении в Ташкенте.", "items": [
+            { "icon": "Truck", "title": "Доставка 1 день", "text": "По Ташкенту, 25 000 сум" },
+            { "icon": "Shirt", "title": "Примерка", "text": "Можно примерить перед оплатой" },
+            { "icon": "RefreshCw", "title": "Обмен 14 дней", "text": "Если не подошёл размер" }
+          ] },
+          "faq": { "title": "Частые вопросы", "items": [
+            { "q": "Как выбрать размер?", "a": "Напишите нам свой рост и вес — подскажем размер." },
+            { "q": "Можно обменять?", "a": "Да, в течение 14 дней при сохранении бирок." }
+          ] }
+        }
+      },
+      "categories": [
+        { "name": "Мужская", "icon": "Shirt" },
+        { "name": "Женская", "icon": "ShoppingBag" },
+        { "name": "Обувь", "icon": "Footprints" },
+        { "name": "Аксессуары", "icon": "Glasses" }
+      ],
+      "products": [
+        { "name": "Худи Oversize", "price": 299000, "cat": 0, "icon": "Shirt", "popular": true, "desc": "Плотный хлопок 380 г/м², свободный крой.", "specs": [["Размеры", "S–XXL"], ["Состав", "100% хлопок"]] },
+        { "name": "Кроссовки Runner", "price": 749000, "oldPrice": 899000, "cat": 2, "icon": "Footprints", "popular": true, "desc": "Лёгкие кроссовки на каждый день с амортизирующей подошвой.", "specs": [["Размеры", "39–45"], ["Верх", "Текстиль"]] },
+        { "name": "Кепка Classic", "price": 149000, "cat": 3, "icon": "Crown", "popular": true, "desc": "Классическая кепка с регулируемым ремешком.", "specs": [["Размер", "Универсальный"]] },
+        { "name": "Платье Midi", "price": 459000, "cat": 1, "icon": "ShoppingBag", "popular": false, "desc": "Струящееся платье миди для особых случаев.", "specs": [["Размеры", "XS–L"]] },
+        { "name": "Джинсы Straight", "price": 389000, "cat": 0, "icon": "Shirt", "popular": false, "desc": "Прямые джинсы из плотного денима.", "specs": [["Размеры", "28–36"]] },
+        { "name": "Солнцезащитные очки", "price": 219000, "cat": 3, "icon": "Glasses", "popular": false, "desc": "Защита UV400, металлическая оправа.", "specs": [["Защита", "UV400"]] }
+      ]
+    },
+    {
+      "key": "beauty",
+      "name": "Beauty",
+      "emoji": "💄",
+      "icon": "Sparkles",
+      "short": "Косметика и уход",
+      "description": "Нежный розовый неон и элегантные шрифты для косметики и парфюмерии.",
+      "config": {
+        "tagline": "Косметика и парфюмерия",
+        "description": "Оригинальная косметика и парфюмерия. Уход за кожей, макияж и подарочные наборы.",
+        "theme": { "preset": "rose", "primary": "#EC4899", "primary2": "#F9A8D4", "bg": "#0B0509", "surface": "#1A0E16", "muted": "#C09AB0", "headingFont": "playfair", "radius": 22, "bgStyle": "glow", "cardStyle": "glass" },
+        "hero": { "title": "Косметика и парфюмерия", "subtitle": "Оригинальные бренды с доставкой", "tags": "Уход за кожей • Макияж • Оригинальные бренды", "art": "Sparkles" },
+        "features": [
+          { "icon": "BadgeCheck", "text": "Оригинал" },
+          { "icon": "Award", "text": "Качество" },
+          { "icon": "Truck", "text": "Доставка" }
+        ],
+        "pages": {
+          "about": { "title": "О магазине", "text": "Мы помогаем подобрать уход и макияж под ваш тип кожи. Только оригинальная продукция с сертификатами.", "image": null },
+          "delivery": { "title": "Доставка и оплата", "text": "Бережно упакуем и доставим ваш заказ.", "items": [
+            { "icon": "Gift", "title": "Подарочная упаковка", "text": "Бесплатно к любому заказу" },
+            { "icon": "Truck", "title": "Доставка", "text": "По Ташкенту за 1 день" },
+            { "icon": "CreditCard", "title": "Оплата", "text": "Наличные, Click, Payme" }
+          ] },
+          "faq": { "title": "Частые вопросы", "items": [
+            { "q": "Продукция оригинальная?", "a": "Да, у нас есть сертификаты на всю продукцию." },
+            { "q": "Поможете подобрать уход?", "a": "Да, напишите нам в Telegram — консультация бесплатно." }
+          ] }
+        }
+      },
+      "categories": [
+        { "name": "Уход за кожей", "icon": "Droplet" },
+        { "name": "Макияж", "icon": "Brush" },
+        { "name": "Парфюмерия", "icon": "SprayCan" },
+        { "name": "Наборы", "icon": "Gift" }
+      ],
+      "products": [
+        { "name": "Парфюм Noir Intense", "price": 1299000, "cat": 2, "icon": "SprayCan", "popular": true, "desc": "Глубокий вечерний аромат с нотами ванили и уда.", "specs": [["Объём", "100 мл"], ["Тип", "Eau de Parfum"]] },
+        { "name": "Набор ухода Glow", "price": 499000, "from": true, "cat": 3, "icon": "Gift", "popular": true, "desc": "Очищение, тонер и крем — базовый уход за 3 шага.", "specs": [["Тип кожи", "Любой"], ["В наборе", "3 средства"]] },
+        { "name": "Тональный крем", "price": 299000, "cat": 1, "icon": "Droplet", "popular": true, "desc": "Лёгкое покрытие, естественный финиш, SPF 20.", "specs": [["Объём", "30 мл"], ["SPF", "20"]] },
+        { "name": "Сыворотка Vitamin C", "price": 259000, "cat": 0, "icon": "Droplet", "popular": false, "desc": "Сияние и ровный тон кожи.", "specs": [["Объём", "30 мл"]] },
+        { "name": "Палетка теней", "price": 349000, "cat": 1, "icon": "Palette", "popular": false, "desc": "12 оттенков — от нюда до вечернего макияжа.", "specs": [["Оттенков", "12"]] },
+        { "name": "Помада Velvet", "price": 159000, "cat": 1, "icon": "Heart", "popular": false, "desc": "Матовая стойкая помада.", "specs": [["Стойкость", "до 8 ч"]] }
+      ]
+    },
+    {
+      "key": "home",
+      "name": "Home",
+      "emoji": "🏠",
+      "icon": "Home",
+      "short": "Товары для дома",
+      "description": "Тёплые оттенки и уютная подача для мебели, декора и текстиля.",
+      "config": {
+        "tagline": "Товары для дома",
+        "description": "Мебель, декор и текстиль для уютного дома. Доставка и сборка.",
+        "theme": { "preset": "sand", "primary": "#F59E0B", "primary2": "#FDE68A", "bg": "#0A0806", "surface": "#18130D", "muted": "#B8A994", "headingFont": "comfortaa", "radius": 20, "bgStyle": "gradient", "cardStyle": "solid" },
+        "hero": { "title": "Товары для дома", "subtitle": "Уют начинается здесь", "tags": "Мебель • Декор • Текстиль • Освещение", "art": "Sofa" },
+        "features": [
+          { "icon": "Award", "text": "Качество" },
+          { "icon": "Heart", "text": "Уют" },
+          { "icon": "Truck", "text": "Доставка" }
+        ],
+        "pages": {
+          "about": { "title": "О магазине", "text": "Подбираем мебель и декор, которые делают дом тёплым. Поможем с выбором и рассчитаем размеры.", "image": null },
+          "delivery": { "title": "Доставка и сборка", "text": "Доставим и соберём мебель бесплатно в пределах Ташкента.", "items": [
+            { "icon": "Truck", "title": "Доставка", "text": "1–3 дня по Ташкенту" },
+            { "icon": "Wrench", "title": "Сборка", "text": "Бесплатно при заказе мебели" },
+            { "icon": "CreditCard", "title": "Оплата", "text": "Наличные, карта, рассрочка" }
+          ] },
+          "faq": { "title": "Частые вопросы", "items": [
+            { "q": "Есть сборка?", "a": "Да, мебель собирают наши мастера бесплатно." },
+            { "q": "Можно выбрать цвет?", "a": "Многие модели доступны в нескольких цветах — уточните в Telegram." }
+          ] }
+        }
+      },
+      "categories": [
+        { "name": "Мебель", "icon": "Sofa" },
+        { "name": "Декор", "icon": "Flower2" },
+        { "name": "Текстиль", "icon": "Bed" },
+        { "name": "Освещение", "icon": "Lamp" }
+      ],
+      "products": [
+        { "name": "Диван Scandi", "price": 4990000, "cat": 0, "icon": "Sofa", "popular": true, "desc": "Трёхместный диван в скандинавском стиле, велюр.", "specs": [["Ширина", "220 см"], ["Обивка", "Велюр"]] },
+        { "name": "Лампа Nordic", "price": 189000, "cat": 3, "icon": "Lamp", "popular": true, "desc": "Настольная лампа с тёплым светом.", "specs": [["Цоколь", "E27"], ["Высота", "45 см"]] },
+        { "name": "Стол обеденный Oak", "price": 1490000, "cat": 0, "icon": "Armchair", "popular": true, "desc": "Массив дуба, на 4–6 персон.", "specs": [["Размер", "140×80 см"], ["Материал", "Дуб"]] },
+        { "name": "Плед Knit", "price": 159000, "cat": 2, "icon": "Bed", "popular": false, "desc": "Мягкий вязаный плед крупной вязки.", "specs": [["Размер", "130×170 см"]] },
+        { "name": "Ваза Ceramic", "price": 119000, "cat": 1, "icon": "Flower2", "popular": false, "desc": "Керамическая ваза ручной работы.", "specs": [["Высота", "30 см"]] },
+        { "name": "Люстра Loft", "price": 690000, "cat": 3, "icon": "Lightbulb", "popular": false, "desc": "Подвесная люстра в стиле лофт.", "specs": [["Ламп", "5"]] }
+      ]
+    },
+    {
+      "key": "auto",
+      "name": "Auto",
+      "emoji": "🚗",
+      "icon": "Car",
+      "short": "Автотовары и запчасти",
+      "description": "Агрессивный красный стиль для запчастей, масел, шин и автоаксессуаров.",
+      "config": {
+        "tagline": "Автотовары и запчасти",
+        "description": "Оригинальные запчасти, масла и шины. Подбор по VIN-коду.",
+        "theme": { "preset": "racing", "primary": "#EF4444", "primary2": "#FB923C", "bg": "#090505", "surface": "#170D0D", "muted": "#B39A9A", "headingFont": "russo", "radius": 12, "bgStyle": "glow", "cardStyle": "solid" },
+        "hero": { "title": "Автотовары и запчасти", "subtitle": "Подбор по VIN за 10 минут", "tags": "Запчасти • Аксессуары • Масла • Шины", "art": "CarFront" },
+        "features": [
+          { "icon": "BadgeCheck", "text": "Оригинал" },
+          { "icon": "ShieldCheck", "text": "Гарантия" },
+          { "icon": "Truck", "text": "Доставка" }
+        ],
+        "pages": {
+          "about": { "title": "О магазине", "text": "Запчасти для японских, корейских и европейских авто. Подберём деталь по VIN-коду.", "image": null },
+          "delivery": { "title": "Доставка и оплата", "text": "Отправляем по всему Узбекистану.", "items": [
+            { "icon": "Truck", "title": "Доставка", "text": "По Ташкенту в день заказа" },
+            { "icon": "Wrench", "title": "Установка", "text": "У партнёрских СТО со скидкой" },
+            { "icon": "CreditCard", "title": "Оплата", "text": "Наличные, Click, Payme" }
+          ] },
+          "faq": { "title": "Частые вопросы", "items": [
+            { "q": "Как подобрать деталь?", "a": "Отправьте VIN-код в Telegram — подберём за 10 минут." },
+            { "q": "Есть гарантия?", "a": "Да, на все оригинальные запчасти." }
+          ] }
+        }
+      },
+      "categories": [
+        { "name": "Запчасти", "icon": "Wrench" },
+        { "name": "Аксессуары", "icon": "Car" },
+        { "name": "Масла", "icon": "Fuel" },
+        { "name": "Шины", "icon": "Disc" }
+      ],
+      "products": [
+        { "name": "Шины R17 Sport", "price": 699000, "from": true, "cat": 3, "icon": "Disc", "popular": true, "desc": "Летние шины с отличным сцеплением на мокрой дороге.", "specs": [["Размер", "225/45 R17"], ["Сезон", "Лето"]] },
+        { "name": "Масло 5W-30", "price": 129000, "from": true, "cat": 2, "icon": "Fuel", "popular": true, "desc": "Синтетическое моторное масло.", "specs": [["Объём", "4 л"], ["Тип", "Синтетика"]] },
+        { "name": "Видеорегистратор 4K", "price": 499000, "cat": 1, "icon": "Camera", "popular": true, "desc": "Запись 4K, ночной режим, Wi‑Fi.", "specs": [["Разрешение", "4K"], ["Угол", "170°"]] },
+        { "name": "Тормозные колодки", "price": 259000, "cat": 0, "icon": "Gauge", "popular": false, "desc": "Передние колодки с низким уровнем пыли.", "specs": [["Ось", "Передняя"]] },
+        { "name": "Аккумулятор 75Ah", "price": 990000, "cat": 0, "icon": "Zap", "popular": false, "desc": "Необслуживаемый аккумулятор.", "specs": [["Ёмкость", "75 А·ч"]] },
+        { "name": "Коврики 3D", "price": 349000, "cat": 1, "icon": "Car", "popular": false, "desc": "Полиуретановые коврики с бортиками.", "specs": [["Комплект", "4 шт"]] }
+      ]
+    },
+    {
+      "key": "sport",
+      "name": "Sport",
+      "emoji": "🏋️",
+      "icon": "Dumbbell",
+      "short": "Спорт и фитнес",
+      "description": "Энергичный зелёный стиль для спорттоваров, тренажёров и экипировки.",
+      "config": {
+        "tagline": "Спортивные товары",
+        "description": "Всё для фитнеса и активного образа жизни.",
+        "theme": { "preset": "emerald", "primary": "#22C55E", "primary2": "#A3E635", "bg": "#050906", "surface": "#0E1710", "muted": "#9AB3A0", "headingFont": "oswald", "radius": 16, "bgStyle": "glow", "cardStyle": "glass" },
+        "hero": { "title": "Спортивные товары", "subtitle": "Тренируйся с лучшим инвентарём", "tags": "Фитнес • Тренировки • Активный образ жизни", "art": "Dumbbell" },
+        "features": [
+          { "icon": "Award", "text": "Качество" },
+          { "icon": "Tag", "text": "Бренды" },
+          { "icon": "Truck", "text": "Доставка" }
+        ],
+        "pages": {
+          "about": { "title": "О магазине", "text": "Инвентарь для дома и зала, спортивная одежда и аксессуары. Поможем собрать домашний спортзал.", "image": null },
+          "delivery": { "title": "Доставка и оплата", "text": "Быстрая доставка по всему Узбекистану.", "items": [
+            { "icon": "Truck", "title": "Доставка", "text": "1–2 дня" },
+            { "icon": "ShieldCheck", "title": "Гарантия", "text": "На тренажёры — 1 год" },
+            { "icon": "CreditCard", "title": "Оплата", "text": "При получении" }
+          ] },
+          "faq": { "title": "Частые вопросы", "items": [
+            { "q": "Поможете с выбором?", "a": "Да, подберём инвентарь под ваши цели." },
+            { "q": "Есть оптовые цены?", "a": "Да, для спортзалов и клубов." }
+          ] }
+        }
+      },
+      "categories": [
+        { "name": "Фитнес", "icon": "Activity" },
+        { "name": "Тренажёры", "icon": "Dumbbell" },
+        { "name": "Одежда", "icon": "Shirt" },
+        { "name": "Аксессуары", "icon": "Timer" }
+      ],
+      "products": [
+        { "name": "Гантели 2×10 кг", "price": 349000, "cat": 1, "icon": "Dumbbell", "popular": true, "desc": "Разборные гантели с прорезиненными дисками.", "specs": [["Вес", "2×10 кг"]] },
+        { "name": "Коврик для йоги", "price": 189000, "cat": 0, "icon": "Activity", "popular": true, "desc": "Нескользящий коврик 6 мм.", "specs": [["Толщина", "6 мм"], ["Размер", "183×61 см"]] },
+        { "name": "Шейкер 700 мл", "price": 99000, "cat": 3, "icon": "Coffee", "popular": true, "desc": "Шейкер с сеточкой для протеина.", "specs": [["Объём", "700 мл"]] },
+        { "name": "Велотренажёр", "price": 3490000, "cat": 1, "icon": "Bike", "popular": false, "desc": "Магнитный велотренажёр для дома.", "specs": [["Уровней", "8"], ["Макс. вес", "120 кг"]] },
+        { "name": "Фитнес-браслет", "price": 299000, "cat": 3, "icon": "Watch", "popular": false, "desc": "Пульс, шаги, сон.", "specs": [["Автономность", "14 дней"]] },
+        { "name": "Футболка DryFit", "price": 129000, "cat": 2, "icon": "Shirt", "popular": false, "desc": "Дышащая футболка для тренировок.", "specs": [["Размеры", "S–XXL"]] }
+      ]
+    },
+    {
+      "key": "tools",
+      "name": "Tools",
+      "emoji": "🛠️",
+      "icon": "Wrench",
+      "short": "Инструменты",
+      "description": "Индустриальный жёлтый стиль для инструментов и оборудования.",
+      "config": {
+        "tagline": "Инструменты и оборудование",
+        "description": "Электро- и ручной инструмент для мастеров и дома.",
+        "theme": { "preset": "electric", "primary": "#EAB308", "primary2": "#FDE047", "bg": "#090804", "surface": "#16140A", "muted": "#B3AC8F", "headingFont": "exo2", "radius": 10, "bgStyle": "glow", "cardStyle": "solid" },
+        "hero": { "title": "Инструменты и оборудование", "subtitle": "Для профессионалов и дома", "tags": "Строительные • Ручные • Электроинструменты", "art": "Drill" },
+        "features": [
+          { "icon": "Hammer", "text": "Надёжность" },
+          { "icon": "ShieldCheck", "text": "Гарантия" },
+          { "icon": "Truck", "text": "Доставка" }
+        ],
+        "pages": {
+          "about": { "title": "О магазине", "text": "Профессиональный инструмент с гарантией. Работаем с частными мастерами и строительными компаниями.", "image": null },
+          "delivery": { "title": "Доставка и оплата", "text": "Отгрузка со склада в день заказа.", "items": [
+            { "icon": "Truck", "title": "Доставка", "text": "По Ташкенту — в день заказа" },
+            { "icon": "ShieldCheck", "title": "Гарантия", "text": "До 3 лет на электроинструмент" },
+            { "icon": "CreditCard", "title": "Оплата", "text": "Наличные, перечисление, карта" }
+          ] },
+          "faq": { "title": "Частые вопросы", "items": [
+            { "q": "Работаете с юрлицами?", "a": "Да, с НДС и закрывающими документами." },
+            { "q": "Есть сервис?", "a": "Да, гарантийный и постгарантийный ремонт." }
+          ] }
+        }
+      },
+      "categories": [
+        { "name": "Электро", "icon": "Zap" },
+        { "name": "Ручные", "icon": "Hammer" },
+        { "name": "Измерение", "icon": "Ruler" },
+        { "name": "Расходники", "icon": "Package" }
+      ],
+      "products": [
+        { "name": "Дрель-шуруповёрт 18V", "price": 1490000, "cat": 0, "icon": "Drill", "popular": true, "desc": "Бесщёточный двигатель, 2 аккумулятора в комплекте.", "specs": [["Напряжение", "18 В"], ["Момент", "60 Н·м"]] },
+        { "name": "Болгарка 125 мм", "price": 1290000, "cat": 0, "icon": "Disc", "popular": true, "desc": "Мощная УШМ с плавным пуском.", "specs": [["Мощность", "1100 Вт"], ["Диск", "125 мм"]] },
+        { "name": "Набор инструментов 108", "price": 799000, "cat": 1, "icon": "Wrench", "popular": true, "desc": "108 предметов в кейсе.", "specs": [["Предметов", "108"]] },
+        { "name": "Лазерный уровень", "price": 690000, "cat": 2, "icon": "Ruler", "popular": false, "desc": "Построитель плоскостей 360°.", "specs": [["Дальность", "30 м"]] },
+        { "name": "Молоток 500 г", "price": 89000, "cat": 1, "icon": "Hammer", "popular": false, "desc": "Фиберглассовая ручка.", "specs": [["Вес", "500 г"]] },
+        { "name": "Диски по металлу ×10", "price": 59000, "cat": 3, "icon": "Package", "popular": false, "desc": "Отрезные диски 125×1 мм.", "specs": [["В упаковке", "10 шт"]] }
+      ]
+    },
+    {
+      "key": "kids",
+      "name": "Kids",
+      "emoji": "🧸",
+      "icon": "ToyBrick",
+      "short": "Детские товары",
+      "description": "Яркий дружелюбный стиль для игрушек, детской одежды и колясок.",
+      "config": {
+        "tagline": "Товары для детей",
+        "description": "Игрушки, одежда, коляски и товары для развития.",
+        "theme": { "preset": "lavender", "primary": "#A855F7", "primary2": "#60A5FA", "bg": "#07061A", "surface": "#141233", "muted": "#A9A6CC", "font": "nunito", "headingFont": "comfortaa", "radius": 24, "bgStyle": "glow", "cardStyle": "glass" },
+        "hero": { "title": "Товары для детей", "subtitle": "Радость и развитие в каждой покупке", "tags": "Игрушки • Одежда • Коляски • Развитие", "art": "ToyBrick", "layout": "split" },
+        "features": [
+          { "icon": "ShieldCheck", "text": "Безопасно" },
+          { "icon": "Award", "text": "Качество" },
+          { "icon": "Truck", "text": "Доставка" }
+        ],
+        "pages": {
+          "about": { "title": "О магазине", "text": "Сертифицированные игрушки и товары для детей от 0 до 12 лет.", "image": null },
+          "delivery": { "title": "Доставка и оплата", "text": "Бережно доставим подарок вашему ребёнку.", "items": [
+            { "icon": "Gift", "title": "Подарочная упаковка", "text": "Бесплатно" },
+            { "icon": "Truck", "title": "Доставка", "text": "По Ташкенту за 1 день" },
+            { "icon": "CreditCard", "title": "Оплата", "text": "При получении" }
+          ] },
+          "faq": { "title": "Частые вопросы", "items": [
+            { "q": "Игрушки сертифицированы?", "a": "Да, у всех товаров есть сертификаты безопасности." },
+            { "q": "Поможете выбрать подарок?", "a": "Напишите возраст ребёнка — предложим варианты." }
+          ] }
+        }
+      },
+      "categories": [
+        { "name": "Игрушки", "icon": "ToyBrick" },
+        { "name": "Одежда", "icon": "Shirt" },
+        { "name": "Коляски", "icon": "Baby" },
+        { "name": "Развитие", "icon": "Puzzle" }
+      ],
+      "products": [
+        { "name": "Конструктор City 500", "price": 299000, "cat": 0, "icon": "Blocks", "popular": true, "desc": "500 деталей, совместим с популярными конструкторами.", "specs": [["Возраст", "6+"], ["Деталей", "500"]] },
+        { "name": "Коляска 3 в 1", "price": 1990000, "cat": 2, "icon": "Baby", "popular": true, "desc": "Люлька, прогулочный блок и автокресло.", "specs": [["Возраст", "0–3 года"], ["Вес", "11 кг"]] },
+        { "name": "Набор для творчества", "price": 199000, "cat": 3, "icon": "Palette", "popular": true, "desc": "Краски, пластилин и раскраски в одном наборе.", "specs": [["Возраст", "3+"]] },
+        { "name": "Плюшевый мишка", "price": 149000, "cat": 0, "icon": "Rabbit", "popular": false, "desc": "Мягкий мишка 60 см.", "specs": [["Высота", "60 см"]] },
+        { "name": "Пазл 1000", "price": 99000, "cat": 3, "icon": "Puzzle", "popular": false, "desc": "Пазл для всей семьи.", "specs": [["Деталей", "1000"]] },
+        { "name": "Комбинезон зимний", "price": 359000, "cat": 1, "icon": "Snowflake", "popular": false, "desc": "Тёплый комбинезон до −25°.", "specs": [["Размеры", "80–116"]] }
+      ]
+    },
+    {
+      "key": "luxury",
+      "name": "Luxury",
+      "emoji": "👑",
+      "icon": "Crown",
+      "short": "Премиальные товары",
+      "description": "Чёрный и золотой, классические шрифты — для часов, украшений и премиальных аксессуаров.",
+      "config": {
+        "tagline": "Премиальные товары",
+        "description": "Часы, украшения, сумки и аксессуары премиум-класса.",
+        "theme": { "preset": "gold", "primary": "#D4A853", "primary2": "#F5D98B", "bg": "#060504", "surface": "#13100B", "muted": "#B5A88F", "headingFont": "playfair", "radius": 8, "bgStyle": "glow", "cardStyle": "outline" },
+        "hero": { "title": "Премиальные товары", "subtitle": "Подлинность и безупречный сервис", "tags": "Часы • Украшения • Сумки • Аксессуары", "art": "Crown", "layout": "split" },
+        "features": [
+          { "icon": "BadgeCheck", "text": "Оригинал" },
+          { "icon": "Crown", "text": "Премиум" },
+          { "icon": "Truck", "text": "Доставка" }
+        ],
+        "pages": {
+          "about": { "title": "О бутике", "text": "Мы подбираем премиальные часы и аксессуары с документами о подлинности. Персональный менеджер для каждого клиента.", "image": null },
+          "delivery": { "title": "Доставка и оплата", "text": "Курьерская доставка с охраной и страховкой.", "items": [
+            { "icon": "ShieldCheck", "title": "Страховка", "text": "Каждая посылка застрахована" },
+            { "icon": "Truck", "title": "VIP-доставка", "text": "Лично в руки в удобное время" },
+            { "icon": "CreditCard", "title": "Оплата", "text": "Наличные, перевод, карта" }
+          ] },
+          "faq": { "title": "Частые вопросы", "items": [
+            { "q": "Есть документы?", "a": "Да, к каждому изделию — сертификат подлинности." },
+            { "q": "Можно посмотреть лично?", "a": "Да, по записи в шоу-руме." }
+          ] }
+        }
+      },
+      "categories": [
+        { "name": "Часы", "icon": "Watch" },
+        { "name": "Украшения", "icon": "Gem" },
+        { "name": "Сумки", "icon": "Briefcase" },
+        { "name": "Аксессуары", "icon": "Glasses" }
+      ],
+      "products": [
+        { "name": "Часы Royal Gold", "price": 199000000, "from": true, "cat": 0, "icon": "Watch", "popular": true, "desc": "Швейцарский механизм, корпус из 18-каратного золота.", "specs": [["Механизм", "Автоподзавод"], ["Корпус", "Золото 18K"], ["Диаметр", "41 мм"]] },
+        { "name": "Часы Tank Classic", "price": 88000000, "from": true, "cat": 0, "icon": "Clock", "popular": true, "desc": "Элегантная классика на кожаном ремешке.", "specs": [["Корпус", "Сталь"], ["Ремешок", "Кожа аллигатора"]] },
+        { "name": "Сумка Monogram", "price": 24990000, "cat": 2, "icon": "Briefcase", "popular": true, "desc": "Культовая сумка из канвы с кожаной отделкой.", "specs": [["Размер", "30×21 см"]] },
+        { "name": "Кольцо Diamond", "price": 35000000, "cat": 1, "icon": "Gem", "popular": false, "desc": "Белое золото, бриллиант 0.5 карат.", "specs": [["Металл", "Белое золото"], ["Камень", "0.5 ct"]] },
+        { "name": "Браслет Love", "price": 52000000, "cat": 1, "icon": "Diamond", "popular": false, "desc": "Жёлтое золото 750 пробы.", "specs": [["Металл", "Золото 750"]] },
+        { "name": "Очки Aviator Gold", "price": 6900000, "cat": 3, "icon": "Glasses", "popular": false, "desc": "Позолоченная оправа, поляризация.", "specs": [["Линзы", "Поляризованные"]] }
+      ]
+    }
+  ],
+  "presets": [
+    { "key": "gold", "name": "Золото", "primary": "#F5A524", "primary2": "#FFD36B", "bg": "#07070A", "surface": "#121218", "text": "#F5F5F7", "muted": "#9A9AA8" },
+    { "key": "neon", "name": "Неон", "primary": "#8B5CF6", "primary2": "#D946EF", "bg": "#07060D", "surface": "#141022", "text": "#F5F3FF", "muted": "#A29BBF" },
+    { "key": "ocean", "name": "Океан", "primary": "#3B82F6", "primary2": "#22D3EE", "bg": "#05070D", "surface": "#0F1420", "text": "#F1F5F9", "muted": "#94A3B8" },
+    { "key": "sunset", "name": "Закат", "primary": "#F97316", "primary2": "#FDBA74", "bg": "#0A0705", "surface": "#17110D", "text": "#FFF7ED", "muted": "#B3A397" },
+    { "key": "rose", "name": "Роза", "primary": "#EC4899", "primary2": "#F9A8D4", "bg": "#0B0509", "surface": "#1A0E16", "text": "#FDF2F8", "muted": "#C09AB0" },
+    { "key": "sand", "name": "Песок", "primary": "#F59E0B", "primary2": "#FDE68A", "bg": "#0A0806", "surface": "#18130D", "text": "#FEF9EE", "muted": "#B8A994" },
+    { "key": "racing", "name": "Гонка", "primary": "#EF4444", "primary2": "#FB923C", "bg": "#090505", "surface": "#170D0D", "text": "#FEF2F2", "muted": "#B39A9A" },
+    { "key": "emerald", "name": "Изумруд", "primary": "#22C55E", "primary2": "#A3E635", "bg": "#050906", "surface": "#0E1710", "text": "#F0FDF4", "muted": "#9AB3A0" },
+    { "key": "electric", "name": "Вольт", "primary": "#EAB308", "primary2": "#FDE047", "bg": "#090804", "surface": "#16140A", "text": "#FEFCE8", "muted": "#B3AC8F" },
+    { "key": "lavender", "name": "Лаванда", "primary": "#A855F7", "primary2": "#60A5FA", "bg": "#07061A", "surface": "#141233", "text": "#F5F3FF", "muted": "#A9A6CC" },
+    { "key": "mono", "name": "Графит", "primary": "#E5E7EB", "primary2": "#9CA3AF", "bg": "#0A0A0A", "surface": "#161616", "text": "#FAFAFA", "muted": "#A3A3A3" },
+    { "key": "light", "name": "Светлая", "primary": "#D97706", "primary2": "#F59E0B", "bg": "#FAFAF7", "surface": "#FFFFFF", "text": "#18181B", "muted": "#71717A" },
+    { "key": "cream", "name": "Крем", "primary": "#9A6B3F", "primary2": "#C8A27A", "bg": "#F6F1EA", "surface": "#FFFDF9", "text": "#2B2118", "muted": "#8A7B6D" }
+  ],
+  "plans": [
+    { "months": 1, "price_uzs": 99000, "stars": 250, "label": "1 месяц" },
+    { "months": 3, "price_uzs": 269000, "stars": 650, "label": "3 месяца" },
+    { "months": 6, "price_uzs": 499000, "stars": 1200, "label": "6 месяцев" },
+    { "months": 12, "price_uzs": 899000, "stars": 2100, "label": "12 месяцев" }
+  ]
+}

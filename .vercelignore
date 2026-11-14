@@ -1,0 +1,4 @@
+.venv
+aziz_dev.db
+.env
+.env.local

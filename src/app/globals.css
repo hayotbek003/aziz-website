@@ -1,0 +1,156 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  --gold-grad: linear-gradient(135deg, #ffd36b 0%, #f5a524 45%, #e08a00 100%);
+}
+
+html,
+body {
+  -webkit-tap-highlight-color: transparent;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #2a2a35 transparent;
+}
+
+.no-scrollbar {
+  scrollbar-width: none;
+}
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* ---------- Платформа AZIZ ---------- */
+.gold-text {
+  background: var(--gold-grad);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.gold-btn {
+  background: var(--gold-grad);
+  color: #1a1100;
+  box-shadow: 0 8px 24px -8px rgb(245 165 36 / 0.55), inset 0 1px 0 rgb(255 255 255 / 0.35);
+}
+.gold-btn:hover {
+  filter: brightness(1.06);
+}
+.panel-card {
+  background: linear-gradient(180deg, rgb(255 255 255 / 0.035), rgb(255 255 255 / 0.015));
+  border: 1px solid rgb(255 255 255 / 0.07);
+}
+.gold-ring {
+  box-shadow: 0 0 0 1px rgb(245 165 36 / 0.55), 0 0 40px -12px rgb(245 165 36 / 0.6);
+}
+.input {
+  @apply w-full rounded-xl border border-white/10 bg-ink-900 px-3.5 py-2.5 text-[15px] text-ink-100 outline-none transition placeholder:text-ink-400 focus:border-gold/70 focus:ring-2 focus:ring-gold/20;
+}
+.label {
+  @apply mb-1.5 block text-[13px] font-semibold text-ink-300;
+}
+
+/* ---------- Витрина магазина (цвета из темы магазина) ---------- */
+.store {
+  font-family: var(--font-body);
+  color: rgb(var(--c-text));
+}
+.store .font-head,
+.store h1,
+.store h2,
+.store h3 {
+  font-family: var(--font-head);
+}
+.store .s-r {
+  border-radius: var(--r);
+}
+.store .s-r-sm {
+  border-radius: calc(var(--r) * 0.65);
+}
+.store .s-card {
+  border-radius: var(--r);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.store[data-card="glass"] .s-card {
+  background: linear-gradient(180deg, rgb(var(--c-surface) / 0.85), rgb(var(--c-surface) / 0.55));
+  border: 1px solid rgb(var(--c-text) / 0.08);
+  backdrop-filter: blur(10px);
+}
+.store[data-card="solid"] .s-card {
+  background: rgb(var(--c-surface));
+  border: 1px solid rgb(var(--c-text) / 0.05);
+}
+.store[data-card="outline"] .s-card {
+  background: rgb(var(--c-surface) / 0.35);
+  border: 1px solid rgb(var(--c-primary) / 0.35);
+}
+.store .s-card-hover:hover {
+  transform: translateY(-2px);
+  border-color: rgb(var(--c-primary) / 0.55);
+  box-shadow: 0 12px 30px -16px rgb(var(--c-primary) / 0.6);
+}
+.store .s-btn {
+  background: linear-gradient(135deg, rgb(var(--c-primary)), rgb(var(--c-primary2)));
+  color: rgb(var(--c-on-primary));
+  border-radius: 999px;
+  box-shadow: 0 10px 26px -10px rgb(var(--c-primary) / 0.75);
+  transition: filter 0.15s ease, transform 0.15s ease;
+}
+.store .s-btn:hover {
+  filter: brightness(1.08);
+}
+.store .s-btn:active {
+  transform: scale(0.98);
+}
+.store .s-chip {
+  border-radius: 999px;
+  border: 1px solid rgb(var(--c-text) / 0.1);
+  background: rgb(var(--c-surface) / 0.6);
+}
+.store .s-chip[data-active="true"] {
+  background: linear-gradient(135deg, rgb(var(--c-primary)), rgb(var(--c-primary2)));
+  color: rgb(var(--c-on-primary));
+  border-color: transparent;
+}
+.store .s-grad-text {
+  background: linear-gradient(135deg, rgb(var(--c-text)), rgb(var(--c-primary2)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+.store .s-input {
+  width: 100%;
+  background: rgb(var(--c-surface) / 0.8);
+  border: 1px solid rgb(var(--c-text) / 0.1);
+  border-radius: 999px;
+  padding: 0.7rem 1rem 0.7rem 2.6rem;
+  color: rgb(var(--c-text));
+  outline: none;
+}
+.store .s-input:focus {
+  border-color: rgb(var(--c-primary) / 0.7);
+}
+.store .s-input::placeholder {
+  color: rgb(var(--c-muted));
+}
+.store .s-glow {
+  filter: drop-shadow(0 0 22px rgb(var(--c-primary) / 0.65));
+}
+.store .s-art {
+  background: radial-gradient(120% 90% at 70% 20%, rgb(var(--c-primary) / 0.35), transparent 60%),
+    radial-gradient(90% 80% at 20% 100%, rgb(var(--c-primary2) / 0.22), transparent 60%),
+    linear-gradient(160deg, rgb(var(--c-surface)), rgb(var(--c-bg)));
+}
+.store .s-grid-bg {
+  background-image: linear-gradient(rgb(var(--c-text) / 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(var(--c-text) / 0.04) 1px, transparent 1px);
+  background-size: 28px 28px;
+}
+
+/* Предпросмотр в редакторе: fixed-элементы витрины позиционируются внутри рамки */
+.preview-frame {
+  transform: translateZ(0);
+}
