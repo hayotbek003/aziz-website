@@ -231,6 +231,11 @@ async def main(dry_run: bool, outreach_limit: int = 0) -> None:
             return  # последним писали вы — отвечать нечего
         if not any(m.out for m in msgs):
             return  # вы не писали этому человеку первым — не наш диалог
+        last_out = next(m for m in reversed(msgs) if m.out)
+        fresh_in = [m for m in msgs if not m.out and m.date > last_out.date]
+        if fresh_in and all((m.date - last_out.date).total_seconds() < 15 for m in fresh_in):
+            log.info("@%s: ответ пришёл через секунды — это автоприветствие, не отвечаем", username)
+            return
         if not bump_daily(st, chat):
             log.warning("Лимит ответов достигнут (чат %s)", username)
             save_state(st)
@@ -293,7 +298,7 @@ async def main(dry_run: bool, outreach_limit: int = 0) -> None:
             return  # друзья, семья и все остальные — не трогаем
         if paused(st, str(event.chat_id)):
             return
-        log.info("Сообщение от @%s", username)
+        log.info("Сообщение от @%s: %s", username, (event.raw_text or "(вложение)").replace("\n", " ")[:120])
         schedule(event.chat_id, username)
 
     @client.on(events.NewMessage(outgoing=True, func=lambda e: e.is_private))
