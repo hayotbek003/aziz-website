@@ -26,10 +26,11 @@ import json
 import logging
 import os
 import random
+import re
 import sys
 import time
 import urllib.request
-from datetime import date
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -151,8 +152,46 @@ def history_from(messages) -> list[dict]:
     return out
 
 
+# ---------------- первые сообщения продавцам (по расписанию) ----------------
+OUTREACH_FILE = ROOT / "outreach_messages.md"
+TASHKENT = timezone(timedelta(hours=5))
+WINDOW = (10, 19)  # отправлять только в рабочее время по Ташкенту
+
+
+def parse_outreach() -> list[tuple[str, str]]:
+    """[(username, текст)] в порядке файла outreach_messages.md."""
+    if not OUTREACH_FILE.exists():
+        return []
+    out = []
+    for block in re.split(r"(?m)^### ", OUTREACH_FILE.read_text(encoding="utf-8"))[1:]:
+        who = re.search(r"\*\*Кому[^*]*\*\*\s*`?@?([A-Za-z0-9_]{4,32})`?", block)
+        text = re.search(r"```text\n(.*?)\n```", block, re.S)
+        if who and text and text.group(1).strip():
+            out.append((who.group(1), text.group(1).strip()))
+    return out
+
+
+def lead_statuses() -> dict[str, str]:
+    if not LEADS.exists():
+        return {}
+    return {_norm(r.get("order_contact", "")): r.get("status", "")
+            for r in csv.DictReader(LEADS.open(encoding="utf-8")) if r.get("verified", "").startswith("yes")}
+
+
+def outreach_queue() -> list[tuple[str, str]]:
+    st = lead_statuses()
+    return [(u, t) for u, t in parse_outreach() if st.get(_norm(u)) == "new"]
+
+
+def next_window_start(now: datetime) -> datetime:
+    start = now.replace(hour=WINDOW[0], minute=0, second=0, microsecond=0)
+    if now >= start:
+        start += timedelta(days=1)
+    return start + timedelta(minutes=random.uniform(0, 20))
+
+
 # ---------------- основной цикл ----------------
-async def main(dry_run: bool) -> None:
+async def main(dry_run: bool, outreach_limit: int = 0) -> None:
     from telethon import TelegramClient, events
 
     api_id, api_hash = os.environ.get("TG_API_ID"), os.environ.get("TG_API_HASH")
@@ -269,12 +308,76 @@ async def main(dry_run: bool) -> None:
             save_state(st)
             log.info("Вы ответили сами в чате %s — автоответчик молчит 12 часов", chat)
 
+    async def outreach_loop() -> None:
+        """Первые сообщения продавцам: только 10:00–19:00 по Ташкенту, до N в день, пауза 5–10 минут."""
+        from telethon.errors import FloodWaitError, PeerFloodError, RPCError
+
+        while True:
+            now = datetime.now(TASHKENT)
+            o = st.setdefault("outreach", {"date": "", "count": 0, "stopped_until": 0})
+            if o["date"] != now.date().isoformat():
+                o.update(date=now.date().isoformat(), count=0)
+            if not (WINDOW[0] <= now.hour < WINDOW[1]) or o["count"] >= outreach_limit or time.time() < o["stopped_until"]:
+                wake = next_window_start(now)
+                if time.time() < o["stopped_until"]:
+                    wake = max(wake, datetime.fromtimestamp(o["stopped_until"], TASHKENT))
+                log.info("Рассылка: следующая отправка %s по Ташкенту", wake.strftime("%d.%m %H:%M"))
+                await asyncio.sleep(max(60, (wake - now).total_seconds()))
+                continue
+            queue = outreach_queue()
+            if not queue:
+                log.info("Рассылка: всем проверенным продавцам уже написали")
+                return
+            user, text = queue[0]
+            try:
+                entity = await client.get_entity(user)
+                if getattr(entity, "bot", False) or (await client.get_messages(entity, limit=1)):
+                    set_lead_status(user, "contacted")  # бот или переписка уже есть — не пишем
+                    log.info("Рассылка: @%s пропущен (уже есть переписка)", user)
+                    continue
+                if dry_run:
+                    log.info("[dry-run] рассылка → @%s: %s", user, text[:120])
+                else:
+                    sent = await client.send_message(entity, text)
+                    st["sent_ids"].setdefault(str(sent.chat_id), []).append(sent.id)
+                set_lead_status(user, "contacted")
+                o["count"] += 1
+                save_state(st)
+                log.info("Рассылка: отправлено @%s (%d/%d сегодня)", user, o["count"], outreach_limit)
+            except PeerFloodError:
+                o["stopped_until"] = time.time() + 48 * 3600
+                save_state(st)
+                log.error("Telegram ограничил отправку (PeerFlood) — рассылка остановлена на 2 суток")
+                await client.send_message("me", "⛔ Telegram ограничил отправку сообщений незнакомым (PeerFlood). "
+                                                "Рассылка AZIZ остановлена на 2 суток. Автоответы продолжают работать.")
+                continue
+            except FloodWaitError as e:
+                log.warning("Telegram просит подождать %s сек", e.seconds)
+                await asyncio.sleep(e.seconds + 30)
+                continue
+            except (ValueError, RPCError) as e:
+                set_lead_status(user, "unreachable")  # username не найден или личка закрыта
+                log.warning("Рассылка: @%s недоступен (%s)", user, type(e).__name__)
+                continue
+            await asyncio.sleep(random.uniform(300, 600))
+
+    if outreach_limit > 0:
+        asyncio.create_task(outreach_loop())
+        log.info("Рассылка включена: до %d в день, %d:00–%d:00 по Ташкенту, в очереди %d продавцов",
+                 outreach_limit, WINDOW[0], WINDOW[1], len(outreach_queue()))
     await client.run_until_disconnected()
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dry-run", action="store_true", help="не отправлять, только показывать ответы")
+    ap.add_argument("--outreach", type=int, default=0, metavar="N",
+                    help="отправлять первые сообщения из outreach_messages.md: до N в день (не больше 10)")
+    ap.add_argument("--preview-outreach", action="store_true", help="показать очередь рассылки и выйти")
     args = ap.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
-    asyncio.run(main(args.dry_run))
+    if args.preview_outreach:
+        for i, (u, t) in enumerate(outreach_queue(), 1):
+            print(f"\n=== {i}. @{u} ===\n{t}")
+        raise SystemExit
+    asyncio.run(main(args.dry_run, min(max(args.outreach, 0), 10)))
