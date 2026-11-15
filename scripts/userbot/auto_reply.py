@@ -201,7 +201,9 @@ async def main(dry_run: bool, outreach_limit: int = 0) -> None:
     use_ai = ai.available()  # без ANTHROPIC_API_KEY — бесплатные ответы по ключевым словам
     system = ai.build_system(facts, "dm") if use_ai else ""
     st = load_state()
-    client = TelegramClient(str(SESSION), int(api_id), api_hash)
+    # сеть может пропадать часами (сон компьютера, Wi-Fi) — переподключаемся бесконечно
+    client = TelegramClient(str(SESSION), int(api_id), api_hash,
+                            connection_retries=-1, retry_delay=10, auto_reconnect=True)
     from telethon.errors import PhoneCodeInvalidError, PhoneNumberInvalidError
 
     # при первом запуске спросит телефон и код — вводите сами; при ошибке спросит снова
@@ -380,4 +382,12 @@ if __name__ == "__main__":
         for i, (u, t) in enumerate(outreach_queue(), 1):
             print(f"\n=== {i}. @{u} ===\n{t}")
         raise SystemExit
-    asyncio.run(main(args.dry_run, min(max(args.outreach, 0), 10)))
+    while True:  # перезапуск после обрыва связи; состояние и лимиты хранятся в state.json
+        try:
+            asyncio.run(main(args.dry_run, min(max(args.outreach, 0), 10)))
+            break
+        except KeyboardInterrupt:
+            break
+        except (ConnectionError, OSError) as e:
+            log.error("Связь с Telegram потеряна (%s). Перезапуск через 30 секунд…", e)
+            time.sleep(30)
