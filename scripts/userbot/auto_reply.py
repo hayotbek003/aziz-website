@@ -375,8 +375,11 @@ if __name__ == "__main__":
     ap.add_argument("--dry-run", action="store_true", help="не отправлять, только показывать ответы")
     ap.add_argument("--outreach", type=int, default=0, metavar="N",
                     help="отправлять первые сообщения из outreach_messages.md: до N в день (не больше 10)")
+    ap.add_argument("--now", action="store_true", help="рассылка без ожидания рабочего времени (по решению владельца)")
     ap.add_argument("--preview-outreach", action="store_true", help="показать очередь рассылки и выйти")
     args = ap.parse_args()
+    if args.now:
+        WINDOW = (0, 24)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
     if args.preview_outreach:
         for i, (u, t) in enumerate(outreach_queue(), 1):
