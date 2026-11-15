@@ -9,7 +9,8 @@ from ..db import get_session
 from ..models import Category, Event, Media, Product, Shop, User
 from ..security import decode_token
 from ..services import (
-    STATE_LABELS, category_out, html_escape, list_templates, notify, platform_bot_username, product_out, shop_state,
+    STATE_LABELS, category_out, get_plans, html_escape, list_templates, notify, platform_bot_username, product_out,
+    shop_state,
 )
 
 router = APIRouter(prefix="/api", tags=["public"])
@@ -21,12 +22,13 @@ async def health():
 
 
 @router.get("/public/config")
-async def public_config():
+async def public_config(session: AsyncSession = Depends(get_session)):
     return {
         "bot_username": await platform_bot_username(),
         "dev_mode": settings.dev_mode,
         "trial_days": settings.trial_days,
         "webapp_url": settings.webapp_url,
+        "plans": await get_plans(session),
     }
 
 

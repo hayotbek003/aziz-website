@@ -1,4 +1,6 @@
 """Платформенный Telegram-бот AZIZ Website (aiogram 3)."""
+import json
+import logging
 import re
 from datetime import timedelta
 
@@ -9,19 +11,23 @@ from aiogram.fsm.state import State, StatesGroup
 from aiogram.types import (
     CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, LabeledPrice, Message, PreCheckoutQuery, WebAppInfo,
 )
-from sqlalchemy import select
+from sqlalchemy import func, select
 
+from ..ai_assistant import available as ai_available
+from ..ai_assistant import build_system
+from ..ai_assistant import reply as ai_reply
 from ..config import settings
 from ..db import SessionLocal
-from ..models import LoginToken, Payment, Shop, User, utcnow
+from ..models import AiMessage, LoginToken, Payment, Shop, User, utcnow
 from ..routers.auth import upsert_tg_user
 from ..security import random_token
 from ..services import (
     STATE_LABELS, ShopError, create_shop, get_plans, get_template, html_escape, list_templates, mark_payment_paid,
-    shop_state, slug_problem, slug_taken, unique_slug,
+    notify_admins, platform_bot_username, shop_state, slug_problem, slug_taken, unique_slug,
 )
 
 router = Router(name="platform")
+log = logging.getLogger("aziz.bot")
 
 
 class CreateShop(StatesGroup):
@@ -471,6 +477,76 @@ async def cmd_admin(message: Message):
     await message.answer("🛡 Админ-панель платформы" + dev_link("/admin"), reply_markup=kb([web("Открыть админ-панель", "/admin")]))
 
 
+# ---------- ИИ-консультант (Claude) для всех остальных сообщений ----------
+AI_DAILY_LIMIT = 40
+AI_HISTORY = 16
+_system_cache: dict[str, str] = {}
+
+
+async def _ai_system(s) -> str:
+    facts = {
+        "plans": await get_plans(s),
+        "templates": await list_templates(s),
+        "trial_days": settings.trial_days,
+        "webapp_url": settings.webapp_url,
+        "bot_username": await platform_bot_username(),
+    }
+    key = json.dumps(facts, sort_keys=True, ensure_ascii=False)
+    if key not in _system_cache:
+        _system_cache.clear()
+        _system_cache[key] = build_system(facts, "bot")
+    return _system_cache[key]
+
+
 @router.message(F.text)
 async def fallback(message: Message):
-    await message.answer("Нажмите /start, чтобы открыть меню.", reply_markup=welcome_kb())
+    text = (message.text or "").strip()
+    if text.startswith("/") or not ai_available():
+        await message.answer("Нажмите /start, чтобы открыть меню.", reply_markup=welcome_kb())
+        return
+    uid = message.from_user.id
+    async with SessionLocal() as s:
+        await tg_user(s, message.from_user)
+        since = utcnow() - timedelta(days=1)
+        used = await s.scalar(select(func.count(AiMessage.id)).where(
+            AiMessage.tg_user_id == uid, AiMessage.role == "user", AiMessage.created_at >= since))
+        if (used or 0) >= AI_DAILY_LIMIT:
+            await message.answer("На сегодня я ответил на много вопросов 🙂 Владелец свяжется с вами, или нажмите /start.")
+            return
+        rows = (await s.scalars(
+            select(AiMessage)
+            .where(AiMessage.tg_user_id == uid, AiMessage.role.in_(("user", "assistant")),
+                   AiMessage.created_at >= utcnow() - timedelta(days=7))
+            .order_by(AiMessage.id.desc()).limit(AI_HISTORY)
+        )).all()
+        s.add(AiMessage(tg_user_id=uid, role="user", content=text[:4000]))
+        await s.commit()
+        system = await _ai_system(s)
+    history = [{"role": r.role, "content": r.content} for r in reversed(rows)] + [{"role": "user", "content": text}]
+    try:
+        await message.bot.send_chat_action(message.chat.id, "typing")
+        answer, handoff, _ = await ai_reply(history, system)
+    except Exception:
+        log.exception("AI reply failed")
+        answer, handoff = "Сейчас не могу ответить — передал ваш вопрос владельцу, он скоро напишет.", True
+    notify_owner = False
+    async with SessionLocal() as s:
+        s.add(AiMessage(tg_user_id=uid, role="assistant", content=answer))
+        if handoff:
+            recent = await s.scalar(select(AiMessage.id).where(
+                AiMessage.tg_user_id == uid, AiMessage.role == "handoff",
+                AiMessage.created_at >= utcnow() - timedelta(minutes=30)))
+            if not recent:
+                notify_owner = True
+                s.add(AiMessage(tg_user_id=uid, role="handoff", content=text[:500]))
+        await s.commit()
+    await message.answer(html_escape(answer), reply_markup=kb(
+        [btn("🚀 Создать сайт", "create"), btn("🗂 Мои сайты", "my")]))
+    if notify_owner:
+        u = message.from_user
+        who = html_escape(" ".join(x for x in (u.first_name, u.last_name) if x) or "без имени")
+        await notify_admins(
+            f"🙋 <b>Нужен владелец</b>\nОт: <a href=\"tg://user?id={u.id}\">{who}</a>"
+            + (f" @{html_escape(u.username)}" if u.username else "")
+            + f"\nСообщение: {html_escape(text[:500])}\nОтвет ИИ: {html_escape(answer[:300])}"
+        )

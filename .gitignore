@@ -11,4 +11,13 @@ aziz_dev.db
 *.tsbuildinfo
 .vercel
 leads.csv
+outreach_messages.md
 
+
+.vercel
+.env*
+# автоответчик: сессия Telegram = доступ к аккаунту
+*.session
+*.session-journal
+scripts/userbot/state.json
+.neon

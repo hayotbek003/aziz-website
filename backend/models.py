@@ -149,6 +149,17 @@ class LoginToken(Base):
     used: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
+class AiMessage(Base):
+    """История диалога ИИ-консультанта бота (role: user | assistant | handoff)."""
+
+    __tablename__ = "ai_messages"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    tg_user_id: Mapped[int] = mapped_column(BigInteger, index=True)
+    role: Mapped[str] = mapped_column(String(16))
+    content: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(TS, default=utcnow, index=True)
+
+
 class BotState(Base):
     """FSM-хранилище aiogram в БД (serverless не сохраняет память между вызовами)."""
 
