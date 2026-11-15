@@ -163,7 +163,21 @@ async def main(dry_run: bool) -> None:
     system = ai.build_system(facts, "dm") if use_ai else ""
     st = load_state()
     client = TelegramClient(str(SESSION), int(api_id), api_hash)
-    await client.start()  # при первом запуске спросит телефон и код — вводите сами
+    from telethon.errors import PhoneCodeInvalidError, PhoneNumberInvalidError
+
+    # при первом запуске спросит телефон и код — вводите сами; при ошибке спросит снова
+    while True:
+        try:
+            await client.start(
+                phone=lambda: os.environ.pop("TG_PHONE", "").strip()
+                or input("\nНомер телефона в формате +998XXXXXXXXX: ").strip().replace(" ", ""),
+                code_callback=lambda: input("Код из Telegram (придёт в приложение): ").strip(),
+            )
+            break
+        except PhoneNumberInvalidError:
+            print("Неверный номер. Нужно +998 и ещё 9 цифр, например +998901234567. Попробуйте снова.")
+        except PhoneCodeInvalidError:
+            print("Неверный код. Попробуйте снова — придёт новый код.")
     me = await client.get_me()
     log.info("Вошли как @%s. Автоответчик работает (%s)%s.", me.username,
              "ИИ Claude" if use_ai else "ответы по ключевым словам", " (dry-run)" if dry_run else "")
