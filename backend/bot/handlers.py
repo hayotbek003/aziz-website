@@ -16,6 +16,7 @@ from sqlalchemy import func, select
 from ..ai_assistant import available as ai_available
 from ..ai_assistant import build_system
 from ..ai_assistant import reply as ai_reply
+from ..faq_assistant import answer as faq_answer
 from ..config import settings
 from ..db import SessionLocal
 from ..models import AiMessage, LoginToken, Payment, Shop, User, utcnow
@@ -477,20 +478,23 @@ async def cmd_admin(message: Message):
     await message.answer("🛡 Админ-панель платформы" + dev_link("/admin"), reply_markup=kb([web("Открыть админ-панель", "/admin")]))
 
 
-# ---------- ИИ-консультант (Claude) для всех остальных сообщений ----------
+# ---------- Консультант: Claude, если задан ключ, иначе бесплатные ответы по ключевым словам ----------
 AI_DAILY_LIMIT = 40
 AI_HISTORY = 16
 _system_cache: dict[str, str] = {}
 
 
-async def _ai_system(s) -> str:
-    facts = {
+async def _facts(s) -> dict:
+    return {
         "plans": await get_plans(s),
         "templates": await list_templates(s),
         "trial_days": settings.trial_days,
         "webapp_url": settings.webapp_url,
         "bot_username": await platform_bot_username(),
     }
+
+
+def _ai_system(facts: dict) -> str:
     key = json.dumps(facts, sort_keys=True, ensure_ascii=False)
     if key not in _system_cache:
         _system_cache.clear()
@@ -501,7 +505,7 @@ async def _ai_system(s) -> str:
 @router.message(F.text)
 async def fallback(message: Message):
     text = (message.text or "").strip()
-    if text.startswith("/") or not ai_available():
+    if text.startswith("/"):
         await message.answer("Нажмите /start, чтобы открыть меню.", reply_markup=welcome_kb())
         return
     uid = message.from_user.id
@@ -521,11 +525,14 @@ async def fallback(message: Message):
         )).all()
         s.add(AiMessage(tg_user_id=uid, role="user", content=text[:4000]))
         await s.commit()
-        system = await _ai_system(s)
+        facts = await _facts(s)
     history = [{"role": r.role, "content": r.content} for r in reversed(rows)] + [{"role": "user", "content": text}]
     try:
-        await message.bot.send_chat_action(message.chat.id, "typing")
-        answer, handoff, _ = await ai_reply(history, system)
+        if ai_available():
+            await message.bot.send_chat_action(message.chat.id, "typing")
+            answer, handoff, _ = await ai_reply(history, _ai_system(facts))
+        else:  # бесплатный режим без внешнего API
+            answer, handoff, _ = faq_answer(text, facts, "bot")
     except Exception:
         log.exception("AI reply failed")
         answer, handoff = "Сейчас не могу ответить — передал ваш вопрос владельцу, он скоро напишет.", True

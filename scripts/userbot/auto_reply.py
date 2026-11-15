@@ -1,10 +1,11 @@
-"""Автоответчик в ЛИЧНОМ Telegram владельца (Telethon + Claude).
+"""Автоответчик в ЛИЧНОМ Telegram владельца (Telethon; бесплатные ответы по ключевым словам или Claude).
 
 Что делает:
   * НИКОМУ не пишет первым.
   * Отвечает только продавцам из leads.csv (verified=yes, статус не refused/invalid),
     и только в чатах, где вы уже написали первым (ваше сообщение с демо).
-  * Ждёт 40–90 секунд, пока человек допишет, «печатает» и отвечает через ИИ (backend/ai_assistant.py).
+  * Ждёт 40–90 секунд, пока человек допишет, «печатает» и отвечает: бесплатно по ключевым словам
+    (backend/faq_assistant.py) или через Claude, если в .env задан ANTHROPIC_API_KEY.
   * Если вы сами написали в чат после ответа продавца — автоответчик молчит в этом чате 12 часов.
   * Скидки, оплата переводом, жалобы, «позовите человека» — отвечает, что вы скоро напишете,
     пишет вам в «Избранное» и молчит в этом чате 24 часа.
@@ -44,6 +45,7 @@ for _name in (".env.local", ".env"):
                 os.environ.setdefault(_k.strip(), _v.strip().strip('"').strip("'"))
 
 from backend import ai_assistant as ai  # noqa: E402
+from backend import faq_assistant as faq  # noqa: E402
 
 HERE = Path(__file__).resolve().parent
 SESSION = HERE / "aziz_owner"          # aziz_owner.session — ключ к вашему аккаунту, никому не передавайте
@@ -131,13 +133,12 @@ def set_lead_status(username: str, status: str) -> None:
 
 
 # ---------------- факты о платформе (с боевого сайта) ----------------
-def load_system() -> str:
+def load_facts() -> dict:
     base = os.environ.get("WEBAPP_URL", "").rstrip("/")
     cfg = json.load(urllib.request.urlopen(f"{base}/api/public/config", timeout=30))
     tpl = json.load(urllib.request.urlopen(f"{base}/api/public/templates", timeout=30))["templates"]
-    facts = {"plans": cfg.get("plans", []), "templates": tpl, "trial_days": cfg.get("trial_days", 7),
-             "webapp_url": cfg.get("webapp_url", base), "bot_username": cfg.get("bot_username", "")}
-    return ai.build_system(facts, "dm")
+    return {"plans": cfg.get("plans", []), "templates": tpl, "trial_days": cfg.get("trial_days", 7),
+            "webapp_url": cfg.get("webapp_url", base), "bot_username": cfg.get("bot_username", "")}
 
 
 def history_from(messages) -> list[dict]:
@@ -157,15 +158,15 @@ async def main(dry_run: bool) -> None:
     api_id, api_hash = os.environ.get("TG_API_ID"), os.environ.get("TG_API_HASH")
     if not api_id or not api_hash:
         raise SystemExit("Укажите TG_API_ID и TG_API_HASH в .env (получить: https://my.telegram.org → API development tools).")
-    if not ai.available():
-        raise SystemExit("Укажите ANTHROPIC_API_KEY в .env.")
-
-    system = load_system()
+    facts = load_facts()
+    use_ai = ai.available()  # без ANTHROPIC_API_KEY — бесплатные ответы по ключевым словам
+    system = ai.build_system(facts, "dm") if use_ai else ""
     st = load_state()
     client = TelegramClient(str(SESSION), int(api_id), api_hash)
     await client.start()  # при первом запуске спросит телефон и код — вводите сами
     me = await client.get_me()
-    log.info("Вошли как @%s. Автоответчик работает%s.", me.username, " (dry-run)" if dry_run else "")
+    log.info("Вошли как @%s. Автоответчик работает (%s)%s.", me.username,
+             "ИИ Claude" if use_ai else "ответы по ключевым словам", " (dry-run)" if dry_run else "")
     timers: dict[str, asyncio.Task] = {}
 
     async def respond(chat_id: int, username: str) -> None:
@@ -180,7 +181,15 @@ async def main(dry_run: bool) -> None:
             save_state(st)
             return
         try:
-            text, handoff, stop = await ai.reply(history_from(msgs), system)
+            if use_ai:
+                text, handoff, stop = await ai.reply(history_from(msgs), system)
+            else:
+                fresh = []  # все сообщения продавца после вашего последнего
+                for m in reversed(msgs):
+                    if m.out:
+                        break
+                    fresh.insert(0, (m.message or "").strip())
+                text, handoff, stop = faq.answer(" ".join(x for x in fresh if x) or "?", facts, "dm")
         except Exception:
             log.exception("ИИ не ответил")
             text, handoff, stop = None, True, False
