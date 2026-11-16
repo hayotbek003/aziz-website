@@ -70,6 +70,18 @@ export interface ShopConfig {
     website: string;
   };
   order: { button: string; message: string };
+  /** Страница-визитка для Instagram: /l/<slug> */
+  links: {
+    title: string;
+    bio: string;
+    showShop: boolean;
+    showTelegram: boolean;
+    showChannel: boolean;
+    showBot: boolean;
+    showInstagram: boolean;
+    showPhone: boolean;
+    items: { label: string; url: string }[];
+  };
 }
 
 export interface Category {

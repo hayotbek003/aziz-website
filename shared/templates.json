@@ -55,6 +55,17 @@
     "order": {
       "button": "Заказать в Telegram",
       "message": "Здравствуйте! Хочу заказать:\n{product}\nЦена: {price}\n{link}"
+    },
+    "links": {
+      "title": "",
+      "bio": "",
+      "showShop": true,
+      "showTelegram": true,
+      "showChannel": true,
+      "showBot": true,
+      "showInstagram": false,
+      "showPhone": true,
+      "items": []
     }
   },
   "templates": [

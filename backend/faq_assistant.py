@@ -30,7 +30,13 @@ def detect_lang(text: str) -> str:
 INTENTS: list[tuple[str, tuple[str, ...]]] = [
     ("refuse", ("не интерес", "неинтерес", "не надо", "не нужно", "не пишите", "не пиши", "отпишит", "спам", "нет спасибо",
                 "нет, спасибо", "kerak emas", "kerakmas", "керак эмас", "керакмас", "qiziq emas", "қизиқ эмас",
-                "yozmang", "ёзманг", "bezovta", "безовта")),
+                "yozmang", "ёзманг", "bezovta", "безовта", "qiziqish bildirmay", "қизиқиш билдирмай", "qiziqmay",
+                "қизиқмай", "afsuski", "афсуски", "к сожалению", "не заинтересов", "ehtiyoj yo'q", "эҳтиёж йўқ",
+                "kerak bo'lmay", "керак бўлмай")),
+    ("setup", ("настройте", "настройт", "настроить нам", "сделайте нам", "сделайте бот", "подключите", "sozlab ber",
+               "созлаб бер", "qilib ber", "қилиб бер", "ulab ber", "улаб бер")),
+    ("promo", ("акци", "aksiya", "акция", "старая цена", "старую цену", "зачерк", "цена со скидкой", "цену со скидкой",
+               "скидку на товар", "скидки на товар", "скидка на товар", "eski narx", "chegirmali", "чегирмали", "распродаж")),
     ("discount", ("скидк", "дешевле", "подешев", "акци", "chegirma", "чегирма", "arzonroq", "арзонроқ", "skidka")),
     ("transfer", ("перевод", "переве", "на карту", "картой", "карты", "click", "клик", "payme", "пейми", "uzcard", "humo", "наличн",
                   "o'tkaz", "otkaz", "ўтказ", "karta", "naqd", "нақд")),
@@ -47,7 +53,10 @@ INTENTS: list[tuple[str, tuple[str, ...]]] = [
     ("domain", ("домен", "domain", "хостинг", "адрес", "ссылк", "manzil", "манзил", "havola", "ҳавола", "link")),
     ("products", ("товар", "фото", "картин", "добав", "каталог", "категор", "mahsulot", "маҳсулот", "rasm", "расм",
                   "qo'sh", "қўш", "katalog", "каталог")),
-    ("bot", ("свой бот", "своего бота", "бот магазин", "o'z bot", "ўз бот", "bot ula")),
+    ("bot", ("свой бот", "своего бот", "бот магазин", "o'z bot", "ўз бот", "bot ula", "мини ап", "мини-ап", "миниап",
+             "mini ap", "mini-ap", "miniap", "веб апп", "webapp", "web app", "через тг", "через телеграм", "в телеграме",
+             "telegram orqali", "телеграм орқали", "instagram", "инстаграм", "insta", "инста", "taplink", "таплинк",
+             "bio", "био", "ссылка в профил", "мультиссылк")),
     ("templates", ("шаблон", "дизайн", "пример", "демо", "цвет", "shablon", "шаблон", "dizayn", "дизайн", "namuna",
                    "намуна", "rang", "ранг")),
     ("start", ("как созд", "как сдел", "как начать", "как подключ", "создать", "сделать сайт", "подключ", "начать",
@@ -56,7 +65,7 @@ INTENTS: list[tuple[str, tuple[str, ...]]] = [
     ("thanks", ("спасибо", "благодар", "rahmat", "раҳмат", "рахмат", "tashakkur", "ташаккур")),
 ]
 
-HANDOFF_INTENTS = {"discount", "transfer", "human", "problem"}
+HANDOFF_INTENTS = {"discount", "transfer", "human", "problem", "setup"}
 
 
 def _fmt(n: int) -> str:
@@ -81,7 +90,15 @@ def _texts(facts: dict, lang: str) -> dict[str, str]:
             "orders": "Xaridor mahsulotni tanlab «Заказать в Telegram» tugmasini bosadi — sizning Telegram'ingizga tayyor xabar bilan yozadi. Saytda to'lov va savat yo'q, komissiya ham yo'q.",
             "domain": f"Domen va hosting sotib olish shart emas: do'kon manzili {url}/shop/sizning-nomingiz bo'ladi.",
             "products": "Mahsulotlarni Telegram ichida qo'shasiz: bir nechta rasm, narx, eski narx (chegirma), tavsif, xususiyatlar, kategoriyalar. Xohlasangiz, mahsulotlarni ko'chirishga yordam beramiz.",
-            "bot": "O'z Telegram botingizni ham ulash mumkin: unda «Do'kon» tugmasi paydo bo'ladi va saytingizni ochadi.",
+            "bot": "Ha! Sizning do'koningiz uchun alohida Telegram-bot qilib beramiz: «Do'kon» tugmasi saytni Mini App sifatida "
+                   "to'g'ridan-to'g'ri Telegram ichida ochadi. Instagram uchun bonus: profilga bitta qisqa havola — "
+                   "unda Telegram'ingiz, kanalingiz, botingiz va do'koningiz bo'ladi, o'z havolalaringizni ham qo'shasiz, "
+                   "hammasini o'zingiz o'zgartirasiz. Hammasini o'zimiz sozlab beramiz — «sozlab bering» deb yozing.",
+            "promo": "Ha, aksiyalar bor: har bir mahsulotga eski narx va yangi narx qo'yasiz — eski narx chizilgan holda, "
+                     "chegirma belgisi bilan ko'rinadi. Aksiya tugagach, eski narxni olib tashlaysiz. Bosh sahifaga aksiya "
+                     "bannerini ham qo'yish mumkin.",
+            "setup": "Ajoyib! Hammasini o'zimiz sozlab beramiz: do'kon, Mini App tugmali botingiz va aksiyalar. "
+                     "Do'kon egasiga yetkazdim — u tez orada yozadi.",
             "thanks": "Rahmat! Savollar bo'lsa, yozing.",
             "handoff": "Bu savolni do'kon egasiga yetkazdim — u tez orada o'zi yozadi.",
             "refuse": "Tushundim, bezovta qilganim uchun uzr. Omad!",
@@ -99,7 +116,14 @@ def _texts(facts: dict, lang: str) -> dict[str, str]:
         "orders": "Покупатель выбирает товар и нажимает «Заказать в Telegram» — вам в личку приходит готовое сообщение о товаре. Корзины и оплаты на сайте нет, комиссии тоже нет.",
         "domain": f"Домен и хостинг покупать не нужно: адрес магазина будет {url}/shop/ваше-название.",
         "products": "Товары добавляете прямо в Telegram: несколько фото, цена, старая цена (скидка), описание, характеристики, категории. Можем помочь перенести товары.",
-        "bot": "Можно подключить своего Telegram-бота магазина: у него появится кнопка «Магазин», которая открывает ваш сайт.",
+        "bot": "Да! Сделаем для вашего магазина своего Telegram-бота: кнопка «Магазин» открывает сайт как Mini App прямо "
+               "в Telegram. И бонус для Instagram: одна короткая ссылка в профиль — по ней открывается страница с вашим "
+               "Telegram, каналом, ботом и магазином, можно добавить и свои ссылки, меняете всё сами. "
+               "Всё настроим за вас — напишите «настройте».",
+        "promo": "Да, акции есть: у каждого товара ставите старую и новую цену — старая показывается зачёркнутой, "
+                 "со значком скидки. Акция закончилась — убираете старую цену. На главную можно поставить баннер акции.",
+        "setup": "Отлично! Всё настроим за вас: магазин, вашего бота с кнопкой Mini App и акции. "
+                 "Передал владельцу — он скоро напишет вам сам.",
         "thanks": "Спасибо! Если появятся вопросы — пишите.",
         "handoff": "Этот вопрос я передал владельцу — он скоро напишет вам сам.",
         "refuse": "Понял, извините за беспокойство. Удачи в продажах!",
@@ -131,6 +155,10 @@ def answer(text: str, facts: dict, mode: str = "bot") -> tuple[str, bool, bool]:
     if mode == "dm" and "refuse" in intents:
         return tx["refuse"], False, True
     intents = [i for i in intents if i != "refuse"]
+    if "promo" in intents:  # «скидка на товар» — это акции в магазине, а не просьба скидки у нас
+        intents = [i for i in intents if i != "discount"]
+    if "setup" in intents:
+        return tx["setup"], True, False
     if any(i in HANDOFF_INTENTS for i in intents):
         extra = tx["price"] if "price" in intents and "discount" not in intents else ""
         return (extra + " " + tx["handoff"]).strip(), True, False

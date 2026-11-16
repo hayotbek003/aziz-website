@@ -156,6 +156,7 @@ def history_from(messages) -> list[dict]:
 OUTREACH_FILE = ROOT / "outreach_messages.md"
 TASHKENT = timezone(timedelta(hours=5))
 WINDOW = (10, 19)  # отправлять только в рабочее время по Ташкенту
+MAX_PER_DAY = 45  # потолок первых сообщений в день; при PeerFlood рассылка сама останавливается на 48 ч
 
 
 def parse_outreach() -> list[tuple[str, str]]:
@@ -231,8 +232,9 @@ async def main(dry_run: bool, outreach_limit: int = 0) -> None:
             return  # последним писали вы — отвечать нечего
         if not any(m.out for m in msgs):
             return  # вы не писали этому человеку первым — не наш диалог
-        last_out = next(m for m in reversed(msgs) if m.out)
-        fresh_in = [m for m in msgs if not m.out and m.date > last_out.date]
+        last_out_i = max(i for i, m in enumerate(msgs) if m.out)
+        last_out = msgs[last_out_i]
+        fresh_in = msgs[last_out_i + 1:]  # по порядку, а не по дате: автоприветствие бывает в ту же секунду
         if fresh_in and all((m.date - last_out.date).total_seconds() < 15 for m in fresh_in):
             log.info("@%s: ответ пришёл через секунды — это автоприветствие, не отвечаем", username)
             return
@@ -261,6 +263,7 @@ async def main(dry_run: bool, outreach_limit: int = 0) -> None:
                 async with client.action(chat_id, "typing"):
                     await asyncio.sleep(min(8.0, 2 + len(text) / 40))
                 sent = await client.send_message(chat_id, text)
+                log.info("Ответили @%s: %s", username, text[:150])
                 st["sent_ids"].setdefault(chat, []).append(sent.id)
                 st["sent_ids"][chat] = st["sent_ids"][chat][-200:]
         set_lead_status(username, "replied")
@@ -379,20 +382,22 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--dry-run", action="store_true", help="не отправлять, только показывать ответы")
     ap.add_argument("--outreach", type=int, default=0, metavar="N",
-                    help="отправлять первые сообщения из outreach_messages.md: до N в день (не больше 10)")
+                    help=f"отправлять первые сообщения из outreach_messages.md: до N в день (не больше {MAX_PER_DAY}; "
+                         "безопасно 10, больше — выше риск ограничения аккаунта)")
     ap.add_argument("--now", action="store_true", help="рассылка без ожидания рабочего времени (по решению владельца)")
     ap.add_argument("--preview-outreach", action="store_true", help="показать очередь рассылки и выйти")
     args = ap.parse_args()
     if args.now:
         WINDOW = (0, 24)
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(message)s", datefmt="%H:%M:%S")
+    logging.getLogger("telethon").setLevel(logging.WARNING)  # без шума «Got difference…»
     if args.preview_outreach:
         for i, (u, t) in enumerate(outreach_queue(), 1):
             print(f"\n=== {i}. @{u} ===\n{t}")
         raise SystemExit
     while True:  # перезапуск после обрыва связи; состояние и лимиты хранятся в state.json
         try:
-            asyncio.run(main(args.dry_run, min(max(args.outreach, 0), 10)))
+            asyncio.run(main(args.dry_run, min(max(args.outreach, 0), MAX_PER_DAY)))
             break
         except KeyboardInterrupt:
             break

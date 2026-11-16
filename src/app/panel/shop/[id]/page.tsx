@@ -1,5 +1,5 @@
 "use client";
-import { BarChart3, Copy, CreditCard, ExternalLink, FolderTree, Package, Palette, Settings, TriangleAlert } from "lucide-react";
+import { BarChart3, Copy, CreditCard, ExternalLink, FolderTree, Instagram, Package, Palette, Settings, TriangleAlert } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -29,6 +29,7 @@ export default function ShopDashboard() {
     { href: "editor", icon: Palette, title: "Редактор сайта", text: "Дизайн, баннеры, блоки, страницы" },
     { href: "products", icon: Package, title: "Товары", text: `${data.products.length} товаров · фото, цены, наличие` },
     { href: "categories", icon: FolderTree, title: "Категории", text: `${data.categories.length} категорий` },
+    { href: "links", icon: Instagram, title: "Ссылка для Instagram", text: "Одна короткая ссылка: магазин, Telegram, канал, бот" },
     { href: "settings", icon: Settings, title: "Настройки", text: "Контакты, Telegram, бот, язык, адрес" },
     { href: "stats", icon: BarChart3, title: "Статистика", text: "Просмотры и нажатия «Заказать»" },
     { href: "billing", icon: CreditCard, title: "Срок аренды", text: `до ${formatDate(s.status.expires_at)}` },

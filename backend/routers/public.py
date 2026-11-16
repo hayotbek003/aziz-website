@@ -74,6 +74,7 @@ async def public_shop(slug: str, preview: str | None = None, session: AsyncSessi
         "id": shop.id,
         "slug": shop.slug,
         "template": shop.template,
+        "bot_username": shop.bot_username,
         "config": cfg,
         "categories": [category_out(c) for c in cats],
         "products": [product_out(p) for p in prods],

@@ -90,6 +90,22 @@ def _validate_config(cfg: dict) -> dict:
     cfg.setdefault("contacts", {})["telegram"] = tg
     if cfg.get("language") not in ("ru", "uz"):
         cfg["language"] = "ru"
+    links = cfg.get("links")
+    if isinstance(links, dict):  # свои ссылки на визитке: только http(s)/tg, не больше 12
+        items = []
+        for it in (links.get("items") or [])[:12]:
+            if not isinstance(it, dict):
+                continue
+            url = str(it.get("url", "")).strip()[:500]
+            if url and not re.match(r"^(https?://|tg://)", url, re.I):
+                url = "https://" + url
+            if url:
+                items.append({"label": str(it.get("label", "")).strip()[:60] or url, "url": url})
+        links["items"] = items
+        links["title"] = str(links.get("title", ""))[:80]
+        links["bio"] = str(links.get("bio", ""))[:300]
+    elif links is not None:
+        cfg.pop("links")
     return cfg
 
 
@@ -140,7 +156,7 @@ async def preview_token(shop_id: int, user: User = Depends(current_user), sessio
     return {"token": token, "url": f"{settings.shop_url(shop.slug)}?preview={token}"}
 
 
-INFO_KEYS = {"name", "tagline", "description", "language", "currency", "contacts", "social"}
+INFO_KEYS = {"name", "tagline", "description", "language", "currency", "contacts", "social", "links"}
 
 
 class InfoIn(BaseModel):
