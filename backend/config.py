@@ -48,6 +48,12 @@ class Settings:
             for x in os.getenv("ADMIN_TELEGRAM_IDS", "").replace(" ", "").split(",")
             if x.strip().lstrip("-").isdigit()
         }
+        # Separate allow-list for Telegram-bot subscription controls.
+        self.subscription_admin_ids = {
+            int(x)
+            for x in os.getenv("BOT_SUBSCRIPTION_ADMIN_IDS", "").replace(" ", "").split(",")
+            if x.strip().lstrip("-").isdigit()
+        }
         self.dev_mode = _bool(os.getenv("DEV_MODE"))
         self.trial_days = int(os.getenv("TRIAL_DAYS", "7"))
         self.manual_payment_info = os.getenv(
