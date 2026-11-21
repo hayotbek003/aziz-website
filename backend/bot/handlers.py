@@ -524,12 +524,12 @@ async def _subscription_shop_view(shop_id: int):
     return text, markup
 
 
-async def _apply_manual_subscription(cq: CallbackQuery, shop_id: int, action: str,
+async def _apply_manual_subscription(actor: Message | CallbackQuery, shop_id: int, action: str,
                                      days: int | None = None, expires_at: datetime | None = None):
-    if not _is_subscription_admin(cq.from_user.id):
+    if not _is_subscription_admin(actor.from_user.id):
         return False, "Нет доступа"
     async with SessionLocal() as s:
-        admin = await tg_user(s, cq.from_user)
+        admin = await tg_user(s, actor.from_user)
         shop = await s.get(Shop, shop_id)
         if not shop:
             return False, "Магазин не найден"
@@ -708,7 +708,7 @@ async def st_subscription_custom_days(message: Message, state: FSMContext):
     data = await state.get_data()
     shop_id = int(data["shop_id"])
     await state.clear()
-    ok, result = await _apply_manual_subscription_from_message(message, shop_id, "extend", days=int(raw))
+    ok, result = await _apply_manual_subscription(message, shop_id, "extend", days=int(raw))
     if not ok:
         await message.answer(result)
         return
@@ -730,13 +730,6 @@ async def cb_subscription_expiry(cq: CallbackQuery, state: FSMContext):
     await cq.answer()
 
 
-async def _apply_manual_subscription_from_message(message: Message, shop_id: int, action: str,
-                                                  days: int | None = None, expires_at: datetime | None = None):
-    class _FakeCallback:
-        from_user = message.from_user
-    return await _apply_manual_subscription(_FakeCallback(), shop_id, action, days=days, expires_at=expires_at)
-
-
 @router.message(AdminSubscription.expiry, F.text)
 async def st_subscription_expiry(message: Message, state: FSMContext):
     if not _is_subscription_admin(message.from_user.id):
@@ -754,7 +747,7 @@ async def st_subscription_expiry(message: Message, state: FSMContext):
     data = await state.get_data()
     shop_id = int(data["shop_id"])
     await state.clear()
-    ok, result = await _apply_manual_subscription_from_message(message, shop_id, "set_expiry", expires_at=expiry)
+    ok, result = await _apply_manual_subscription(message, shop_id, "set_expiry", expires_at=expiry)
     if not ok:
         await message.answer(result)
         return
