@@ -2,7 +2,8 @@
 import json
 import logging
 import re
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 from aiogram import F, Router
 from aiogram.filters import Command, CommandObject, CommandStart
@@ -19,12 +20,12 @@ from ..ai_assistant import reply as ai_reply
 from ..faq_assistant import answer as faq_answer
 from ..config import settings
 from ..db import SessionLocal
-from ..models import AiMessage, LoginToken, Payment, Shop, User, utcnow
+from ..models import AiMessage, LoginToken, Payment, Shop, SubscriptionAction, User, utcnow
 from ..routers.auth import upsert_tg_user
 from ..security import random_token
 from ..services import (
-    STATE_LABELS, ShopError, create_shop, get_plans, get_template, html_escape, list_templates, mark_payment_paid,
-    notify_admins, platform_bot_username, shop_state, slug_problem, slug_taken, unique_slug,
+    STATE_LABELS, ShopError, aware, create_shop, get_plans, get_template, html_escape, list_templates, mark_payment_paid,
+    notify, notify_admins, platform_bot_username, shop_state, slug_problem, slug_taken, unique_slug,
 )
 
 router = Router(name="platform")
@@ -35,6 +36,12 @@ class CreateShop(StatesGroup):
     name = State()
     slug = State()
     seller = State()
+
+
+class AdminSubscription(StatesGroup):
+    search = State()
+    days = State()
+    expiry = State()
 
 
 # ---------- helpers ----------
@@ -469,13 +476,388 @@ async def cmd_login(message: Message):
         await send_login(message, s, user)
 
 
+
+# ---------- Ручное управление подписками из Telegram ----------
+def _is_subscription_admin(telegram_id: int) -> bool:
+    return telegram_id in settings.admin_ids or telegram_id in settings.subscription_admin_ids
+
+
+def _sub_status_text(shop: Shop) -> tuple[str, str]:
+    state = shop_state(shop)
+    label = STATE_LABELS.get(state["state"], state["state"])
+    expiry = fmt_date(state["expires_at"])
+    return label, expiry
+
+
+async def _subscription_shop_view(shop_id: int):
+    async with SessionLocal() as s:
+        shop = await s.get(Shop, shop_id)
+        if not shop:
+            return None, None
+        owner = await s.get(User, shop.owner_id)
+        status, expiry = _sub_status_text(shop)
+        cfg = shop.published_config or shop.draft_config or {}
+        name = cfg.get("name") or shop.slug
+        owner_label = (
+            f"@{owner.username}" if owner and owner.username
+            else (owner.first_name if owner else "неизвестен")
+        )
+        owner_tg = owner.telegram_id if owner else "—"
+        text = (
+            f"🧾 <b>Подписка магазина</b>\n\n"
+            f"Магазин: <b>{html_escape(name)}</b>\n"
+            f"ID: <code>{shop.id}</code>\n"
+            f"Адрес: <code>{html_escape(shop.slug)}</code>\n"
+            f"Владелец: {html_escape(owner_label)} ({owner_tg})\n"
+            f"Статус: <b>{html_escape(status)}</b>\n"
+            f"Окончание: <b>{expiry}</b>\n"
+            f"Блокировка: {'да' if shop.is_blocked else 'нет'}"
+        )
+    markup = kb(
+        [btn("➕ 7 дней", f"subadm:extend:7:{shop_id}"), btn("➕ 30 дней", f"subadm:extend:30:{shop_id}")],
+        [btn("✍️ Свой срок", f"subadm:days:{shop_id}"), btn("📅 Установить дату", f"subadm:expiry:{shop_id}")],
+        [btn("♾ Бессрочно", f"subadm:lifetime:{shop_id}")],
+        [btn("📜 История", f"subadm:history:{shop_id}")],
+        [btn("⛔ Отозвать доступ", f"subadm:revoke_confirm:{shop_id}")],
+        [btn("🔎 Новый поиск", "subadm:search")],
+    )
+    return text, markup
+
+
+async def _apply_manual_subscription(actor: Message | CallbackQuery, shop_id: int, action: str,
+                                     days: int | None = None, expires_at: datetime | None = None):
+    if not _is_subscription_admin(actor.from_user.id):
+        return False, "Нет доступа"
+    async with SessionLocal() as s:
+        admin = await tg_user(s, actor.from_user)
+        shop = await s.get(Shop, shop_id)
+        if not shop:
+            return False, "Магазин не найден"
+        now = utcnow()
+        if action == "extend":
+            current_paid_until = aware(shop.paid_until)
+            if current_paid_until and current_paid_until.year >= 9999:
+                return False, "У магазина уже бессрочная подписка"
+            ends = [aware(d) for d in (shop.trial_ends_at, shop.paid_until) if d]
+            shop.paid_until = max([now, *ends]) + timedelta(days=days or 0)
+        elif action == "set_expiry":
+            if not expires_at or expires_at <= now:
+                return False, "Дата окончания должна быть в будущем"
+            shop.paid_until = expires_at
+        elif action == "lifetime":
+            shop.paid_until = datetime(9999, 12, 31, 23, 59, 59, tzinfo=timezone.utc)
+        elif action == "revoke":
+            shop.paid_until = None
+            shop.trial_ends_at = None
+        else:
+            return False, "Неизвестное действие"
+        shop.reminder_key = None
+        row = SubscriptionAction(
+            shop_id=shop.id,
+            admin_user_id=admin.id,
+            action=action,
+            days=days if action == "extend" else None,
+            expires_at=shop.paid_until,
+            reason="Изменено администратором через Telegram-бота",
+        )
+        s.add(row)
+        await s.commit()
+        owner = await s.get(User, shop.owner_id)
+        status = shop_state(shop)
+        shop_name = (shop.published_config or shop.draft_config or {}).get("name") or shop.slug
+        if owner:
+            if action == "revoke":
+                notice = f"⛔ Доступ к магазину «{html_escape(shop_name)}» отозван администратором."
+            elif action == "lifetime":
+                notice = f"♾ Для магазина «{html_escape(shop_name)}» включён бессрочный доступ."
+            else:
+                notice = f"✅ Подписка магазина «{html_escape(shop_name)}» обновлена до {fmt_date(status['expires_at'])}."
+            await notify(owner.telegram_id, notice)
+    return True, "Подписка обновлена"
+
+
+async def _show_subscription_shop(cq: CallbackQuery, shop_id: int):
+    text, markup = await _subscription_shop_view(shop_id)
+    if text is None:
+        await cq.answer("Магазин не найден", show_alert=True)
+        return
+    await cq.message.edit_text(text, reply_markup=markup)
+    await cq.answer()
+
+
+@router.message(Command("subscriptions"))
+async def cmd_subscriptions(message: Message, state: FSMContext):
+    if not _is_subscription_admin(message.from_user.id):
+        return
+    await state.set_state(AdminSubscription.search)
+    await message.answer(
+        "🧾 <b>Ручное управление подписками</b>\n"
+        "Отправь ID магазина, его адрес (slug), название или Telegram ID владельца.",
+        reply_markup=kb([btn("✖️ Отмена", "subadm:cancel")]),
+    )
+
+
+@router.callback_query(F.data == "subadm:search")
+async def cb_subscriptions_search(cq: CallbackQuery, state: FSMContext):
+    if not _is_subscription_admin(cq.from_user.id):
+        await cq.answer("Нет доступа", show_alert=True)
+        return
+    await state.set_state(AdminSubscription.search)
+    await cq.message.answer(
+        "🔎 Введи ID магазина, его адрес (slug), название или Telegram ID владельца.",
+        reply_markup=kb([btn("✖️ Отмена", "subadm:cancel")]),
+    )
+    await cq.answer()
+
+
+@router.callback_query(F.data == "subadm:cancel")
+async def cb_subscriptions_cancel(cq: CallbackQuery, state: FSMContext):
+    await state.clear()
+    await cq.message.answer("Действие отменено.")
+    await cq.answer()
+
+
+@router.message(AdminSubscription.search, F.text)
+async def st_subscriptions_search(message: Message, state: FSMContext):
+    if not _is_subscription_admin(message.from_user.id):
+        await state.clear()
+        return
+    query = (message.text or "").strip().casefold()
+    if not query.isdigit():
+        query = query.lstrip("@")
+    if not query:
+        await message.answer("Введи ID, адрес, название или Telegram ID владельца.")
+        return
+    async with SessionLocal() as s:
+        shops = (await s.scalars(select(Shop).order_by(Shop.id.desc()).limit(500))).all()
+        owner_ids = {shop.owner_id for shop in shops}
+        owners = {
+            u.id: u for u in (
+                await s.scalars(select(User).where(User.id.in_(owner_ids or {0})))
+            ).all()
+        }
+        matches = []
+        for shop in shops:
+            owner = owners.get(shop.owner_id)
+            config = shop.published_config or shop.draft_config or {}
+            name = str(config.get("name") or "")
+            haystack = " ".join([
+                str(shop.id), shop.slug, name,
+                str(owner.telegram_id if owner else ""),
+                owner.username or "" if owner else "",
+                owner.first_name or "" if owner else "",
+            ]).casefold()
+            if query.isdigit():
+                matched = query in (str(shop.id), str(owner.telegram_id) if owner else "")
+            else:
+                matched = query in haystack
+            if matched:
+                matches.append((shop, name or shop.slug))
+    if not matches:
+        await message.answer(
+            "Ничего не найдено. Попробуй другой запрос.",
+            reply_markup=kb([btn("🔎 Искать снова", "subadm:search")]),
+        )
+        return
+    rows = []
+    for shop, name in matches[:15]:
+        status, _ = _sub_status_text(shop)
+        rows.append([btn(f"#{shop.id} · {name[:24]} · {status[:14]}", f"subadm:shop:{shop.id}")])
+    rows.append([btn("🔎 Новый поиск", "subadm:search")])
+    await message.answer(
+        f"Найдено магазинов: <b>{len(matches)}</b>. Выбери нужный:",
+        reply_markup=InlineKeyboardMarkup(inline_keyboard=rows),
+    )
+    await state.clear()
+
+
+@router.callback_query(F.data.startswith("subadm:shop:"))
+async def cb_subscription_shop(cq: CallbackQuery):
+    if not _is_subscription_admin(cq.from_user.id):
+        await cq.answer("Нет доступа", show_alert=True)
+        return
+    await _show_subscription_shop(cq, int(cq.data.split(":")[2]))
+
+
+@router.callback_query(F.data.startswith("subadm:extend:"))
+async def cb_subscription_extend(cq: CallbackQuery):
+    if not _is_subscription_admin(cq.from_user.id):
+        await cq.answer("Нет доступа", show_alert=True)
+        return
+    _, _, days_text, shop_id_text = cq.data.split(":")
+    days, shop_id = int(days_text), int(shop_id_text)
+    ok, result = await _apply_manual_subscription(cq, shop_id, "extend", days=days)
+    if not ok:
+        await cq.answer(result, show_alert=True)
+        return
+    await _show_subscription_shop(cq, shop_id)
+
+
+@router.callback_query(F.data.startswith("subadm:days:"))
+async def cb_subscription_custom_days(cq: CallbackQuery, state: FSMContext):
+    if not _is_subscription_admin(cq.from_user.id):
+        await cq.answer("Нет доступа", show_alert=True)
+        return
+    shop_id = int(cq.data.split(":")[2])
+    await state.set_data({"shop_id": shop_id})
+    await state.set_state(AdminSubscription.days)
+    await cq.message.answer("На сколько дней продлить? Введи число от 1 до 36500.")
+    await cq.answer()
+
+
+@router.message(AdminSubscription.days, F.text)
+async def st_subscription_custom_days(message: Message, state: FSMContext):
+    if not _is_subscription_admin(message.from_user.id):
+        await state.clear()
+        return
+    raw = (message.text or "").strip()
+    if not raw.isdigit() or not 1 <= int(raw) <= 36500:
+        await message.answer("Введи целое число от 1 до 36500.")
+        return
+    data = await state.get_data()
+    shop_id = int(data["shop_id"])
+    await state.clear()
+    ok, result = await _apply_manual_subscription(message, shop_id, "extend", days=int(raw))
+    if not ok:
+        await message.answer(result)
+        return
+    text, markup = await _subscription_shop_view(shop_id)
+    await message.answer("✅ Срок продлён.", reply_markup=None)
+    if text:
+        await message.answer(text, reply_markup=markup)
+
+
+@router.callback_query(F.data.startswith("subadm:expiry:"))
+async def cb_subscription_expiry(cq: CallbackQuery, state: FSMContext):
+    if not _is_subscription_admin(cq.from_user.id):
+        await cq.answer("Нет доступа", show_alert=True)
+        return
+    shop_id = int(cq.data.split(":")[2])
+    await state.set_data({"shop_id": shop_id})
+    await state.set_state(AdminSubscription.expiry)
+    await cq.message.answer("Введи дату окончания в формате <code>ДД.ММ.ГГГГ</code>. Подписка будет действовать до конца этого дня.")
+    await cq.answer()
+
+
+@router.message(AdminSubscription.expiry, F.text)
+async def st_subscription_expiry(message: Message, state: FSMContext):
+    if not _is_subscription_admin(message.from_user.id):
+        await state.clear()
+        return
+    raw = (message.text or "").strip()
+    try:
+        day = datetime.strptime(raw, "%d.%m.%Y").date()
+        expiry = datetime.combine(day, datetime.max.time().replace(microsecond=0), tzinfo=ZoneInfo("Asia/Tashkent"))
+        if expiry <= datetime.now(ZoneInfo("Asia/Tashkent")):
+            raise ValueError
+    except ValueError:
+        await message.answer("Неверная или прошедшая дата. Используй формат ДД.ММ.ГГГГ.")
+        return
+    data = await state.get_data()
+    shop_id = int(data["shop_id"])
+    await state.clear()
+    ok, result = await _apply_manual_subscription(message, shop_id, "set_expiry", expires_at=expiry)
+    if not ok:
+        await message.answer(result)
+        return
+    text, markup = await _subscription_shop_view(shop_id)
+    await message.answer("✅ Дата окончания установлена.")
+    if text:
+        await message.answer(text, reply_markup=markup)
+
+
+@router.callback_query(F.data.startswith("subadm:lifetime:"))
+async def cb_subscription_lifetime(cq: CallbackQuery):
+    if not _is_subscription_admin(cq.from_user.id):
+        await cq.answer("Нет доступа", show_alert=True)
+        return
+    shop_id = int(cq.data.split(":")[2])
+    ok, result = await _apply_manual_subscription(cq, shop_id, "lifetime")
+    if not ok:
+        await cq.answer(result, show_alert=True)
+        return
+    await _show_subscription_shop(cq, shop_id)
+
+
+@router.callback_query(F.data.startswith("subadm:revoke_confirm:"))
+async def cb_subscription_revoke_confirm(cq: CallbackQuery):
+    if not _is_subscription_admin(cq.from_user.id):
+        await cq.answer("Нет доступа", show_alert=True)
+        return
+    shop_id = int(cq.data.split(":")[2])
+    await cq.message.edit_text(
+        f"⚠️ <b>Отозвать доступ к магазину #{shop_id}?</b>\nСрок пробного и оплаченного доступа будет сброшен.",
+        reply_markup=kb(
+            [btn("Да, отозвать доступ", f"subadm:revoke:{shop_id}")],
+            [btn("Отмена", f"subadm:shop:{shop_id}")],
+        ),
+    )
+    await cq.answer()
+
+
+@router.callback_query(F.data.startswith("subadm:revoke:"))
+async def cb_subscription_revoke(cq: CallbackQuery):
+    if not _is_subscription_admin(cq.from_user.id):
+        await cq.answer("Нет доступа", show_alert=True)
+        return
+    shop_id = int(cq.data.split(":")[2])
+    ok, result = await _apply_manual_subscription(cq, shop_id, "revoke")
+    if not ok:
+        await cq.answer(result, show_alert=True)
+        return
+    await _show_subscription_shop(cq, shop_id)
+
+
+@router.callback_query(F.data.startswith("subadm:history:"))
+async def cb_subscription_history(cq: CallbackQuery):
+    if not _is_subscription_admin(cq.from_user.id):
+        await cq.answer("Нет доступа", show_alert=True)
+        return
+    shop_id = int(cq.data.split(":")[2])
+    async with SessionLocal() as s:
+        rows = (await s.scalars(
+            select(SubscriptionAction)
+            .where(SubscriptionAction.shop_id == shop_id)
+            .order_by(SubscriptionAction.id.desc()).limit(15)
+        )).all()
+        if not await s.get(Shop, shop_id):
+            await cq.answer("Магазин не найден", show_alert=True)
+            return
+        admin_ids = {row.admin_user_id for row in rows}
+        admins = {
+            user.id: user for user in (
+                await s.scalars(select(User).where(User.id.in_(admin_ids or {0})))
+            ).all()
+        }
+    if not rows:
+        text = f"📜 <b>История подписки магазина #{shop_id}</b>\n\nИзменений ещё не было."
+    else:
+        lines = []
+        labels = {"extend": "Продление", "set_expiry": "Установка даты", "lifetime": "Бессрочно", "revoke": "Отзыв доступа"}
+        for row in rows:
+            admin = admins.get(row.admin_user_id)
+            by = f"@{admin.username}" if admin and admin.username else (admin.first_name if admin else "админ")
+            details = f" на {row.days} дн." if row.action == "extend" else (f" до {fmt_date(row.expires_at.isoformat())}" if row.expires_at and row.action == "set_expiry" else "")
+            lines.append(
+                f"• <b>{labels.get(row.action, row.action)}</b>{details}\n"
+                f"  {row.created_at.strftime('%d.%m.%Y %H:%M')} · {html_escape(by)}"
+            )
+        text = f"📜 <b>История подписки магазина #{shop_id}</b>\n\n" + "\n".join(lines)
+    await cq.message.edit_text(text, reply_markup=kb([btn("⬅️ К магазину", f"subadm:shop:{shop_id}")]))
+    await cq.answer()
+
+
 @router.message(Command("admin"))
 async def cmd_admin(message: Message):
     async with SessionLocal() as s:
         user = await tg_user(s, message.from_user)
-    if not (user.is_admin or user.telegram_id in settings.admin_ids):
+    if not (user.is_admin or user.telegram_id in settings.admin_ids or user.telegram_id in settings.subscription_admin_ids):
         return
-    await message.answer("🛡 Админ-панель платформы" + dev_link("/admin"), reply_markup=kb([web("Открыть админ-панель", "/admin")]))
+    rows = []
+    if _is_subscription_admin(user.telegram_id):
+        rows.append([btn("🧾 Управление подписками", "subadm:search")])
+    rows.append([web("Открыть веб-админку", "/admin")])
+    await message.answer("🛡 <b>Админ-панель платформы</b>", reply_markup=kb(*rows))
 
 
 # ---------- Консультант: Claude, если задан ключ, иначе бесплатные ответы по ключевым словам ----------
