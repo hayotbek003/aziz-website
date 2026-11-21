@@ -39,7 +39,7 @@ def history_out(row: SubscriptionAction, admin: User | None = None) -> dict:
 
 @router.post("/shops/{shop_id}/subscription")
 async def change_subscription(shop_id: int, body: ManualSubscriptionIn,
-    admin: User = Depends(admin_user), session: AsyncSession = Depends(get_session)):
+    admin: User = Depends(main_admin_user), session: AsyncSession = Depends(get_session)):
     shop = await session.get(Shop, shop_id)
     if not shop:
         raise HTTPException(404, "Магазин не найден")
