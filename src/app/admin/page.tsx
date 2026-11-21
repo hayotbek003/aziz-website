@@ -108,6 +108,12 @@ function Loading() {
 
 function Shops() {
   const { toast, confirm } = useUi();
+  const [canManageSubscriptions, setCanManageSubscriptions] = useState(false);
+  useEffect(() => {
+    api<{ allowed: boolean }>("/api/admin/subscription-access")
+      .then((r) => setCanManageSubscriptions(r.allowed))
+      .catch(() => setCanManageSubscriptions(false));
+  }, []);
   const [q, setQ] = useState("");
   const [status, setStatus] = useState("");
   const [list, setList] = useState<ShopSummary[] | null>(null);
@@ -146,7 +152,7 @@ function Shops() {
   };
   return (
     <div>
-      <div className="mb-3 flex justify-end"><Link href="/admin/subscriptions"><Button variant="gold">Ручное управление подписками</Button></Link></div>
+      {canManageSubscriptions && <div className="mb-3 flex justify-end"><Link href="/admin/subscriptions"><Button variant="gold">Ручное управление подписками</Button></Link></div>}
       <div className="mb-3 flex flex-wrap gap-2">
         <div className="relative min-w-[200px] flex-1">
           <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-ink-400" />
