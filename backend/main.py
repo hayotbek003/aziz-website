@@ -4,13 +4,13 @@ from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 
-from .routers import admin, auth, bot, me, public
+from .routers import admin, auth, bot, me, public, subscriptions
 
 logging.basicConfig(level=logging.INFO)
 
 app = FastAPI(title="AZIZ Website API", version="1.0.0", docs_url="/api/docs", openapi_url="/api/openapi.json")
 
-for r in (public.router, auth.router, me.router, admin.router, bot.router):
+for r in (public.router, auth.router, me.router, admin.router, bot.router, subscriptions.router):
     app.include_router(r)
 
 
