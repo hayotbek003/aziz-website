@@ -168,3 +168,16 @@ class BotState(Base):
     state: Mapped[str | None] = mapped_column(String(120), nullable=True)
     data: Mapped[dict] = mapped_column(JSONType, default=dict)
     updated_at: Mapped[datetime] = mapped_column(TS, default=utcnow, onupdate=utcnow)
+
+
+class SubscriptionAction(Base):
+    """Audit log for administrator-issued subscription changes (no payment required)."""
+    __tablename__ = "subscription_actions"
+    id: Mapped[int] = mapped_column(Integer, primary_key=True)
+    shop_id: Mapped[int] = mapped_column(ForeignKey("shops.id"), index=True)
+    admin_user_id: Mapped[int] = mapped_column(ForeignKey("users.id"), index=True)
+    action: Mapped[str] = mapped_column(String(24))
+    days: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    expires_at: Mapped[datetime | None] = mapped_column(TS, nullable=True)
+    reason: Mapped[str] = mapped_column(Text, default="")
+    created_at: Mapped[datetime] = mapped_column(TS, default=utcnow, index=True)
