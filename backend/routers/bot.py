@@ -62,10 +62,16 @@ async def activate_preview_bot(secret: str):
             drop_pending_updates=False,
         )
         info = await bot.get_webhook_info()
+        error_message = (info.last_error_message or "").replace(bypass, "[redacted]")
         return {
             "ok": True,
             "pending_update_count": info.pending_update_count,
             "has_last_error": bool(info.last_error_message),
+            "last_error_message": error_message or None,
+            "last_error_date": info.last_error_date,
+            "webhook_url": webhook_url.split("?", 1)[0],
+            "ip_address": info.ip_address,
+            "max_connections": info.max_connections,
         }
     finally:
         await bot.session.close()
