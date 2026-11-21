@@ -77,17 +77,32 @@ async def block_user(user_id: int, body: BlockIn, session: AsyncSession = Depend
 
 @router.get("/shops")
 async def shops(q: str = "", status: str = "", session: AsyncSession = Depends(get_session)):
-    rows = (await session.scalars(select(Shop).order_by(Shop.id.desc()).limit(500))).all()
-    owners = {u.id: u for u in (await session.scalars(select(User).where(User.id.in_({s.owner_id for s in rows} or {0})))).all()}
+    # Search in the database BEFORE applying the result limit. Otherwise a user's
+    # shop can be counted in /users but remain invisible here when it is older
+    # than the newest 500 shops.
+    query = select(Shop, User).join(User, User.id == Shop.owner_id)
+    search = q.strip().lstrip("@")
+    if search:
+        like = f"%{search}%"
+        config_name = func.coalesce(
+            Shop.published_config["name"].as_string(),
+            Shop.draft_config["name"].as_string(),
+            Shop.slug,
+        )
+        query = query.where(or_(
+            Shop.slug.ilike(like),
+            User.username.ilike(like),
+            User.first_name.ilike(like),
+            config_name.ilike(like),
+        ))
+    query = query.order_by(Shop.id.desc()).limit(500)
+    rows = (await session.execute(query)).all()
+
     out = []
-    for s in rows:
-        item = shop_summary(s, owners.get(s.owner_id))
+    for shop, owner in rows:
+        item = shop_summary(shop, owner)
         if status and item["status"]["state"] != status:
             continue
-        if q:
-            hay = f"{s.slug} {item['name']} {(owners.get(s.owner_id).username if owners.get(s.owner_id) else '')}".lower()
-            if q.lower().lstrip("@") not in hay:
-                continue
         out.append(item)
     return {"shops": out}
 
