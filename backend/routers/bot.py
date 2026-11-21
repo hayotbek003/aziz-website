@@ -70,6 +70,8 @@ async def activate_preview_bot(secret: str):
             "last_error_message": error_message or None,
             "last_error_date": info.last_error_date,
             "webhook_url": webhook_url.split("?", 1)[0],
+            "telegram_webhook_url_has_bypass": "x-vercel-protection-bypass=" in (info.url or ""),
+            "telegram_webhook_url_matches_target": (info.url or "").split("?", 1)[0] == target.split("?", 1)[0],
             "ip_address": info.ip_address,
             "max_connections": info.max_connections,
         }
