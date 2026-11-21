@@ -11,6 +11,10 @@ from ..services import aware, html_escape, notify, shop_state, shop_summary
 
 router = APIRouter(prefix="/api/admin", tags=["admin-subscriptions"], dependencies=[Depends(main_admin_user)])
 
+@router.get("/subscription-access")
+async def subscription_access():
+    return {"allowed": True}
+
 class ManualSubscriptionIn(BaseModel):
     action: str = Field(pattern="^(extend|set_expiry|lifetime|revoke)$")
     days: int | None = Field(default=None, ge=1, le=36500)
