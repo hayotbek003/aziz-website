@@ -535,6 +535,9 @@ async def _apply_manual_subscription(actor: Message | CallbackQuery, shop_id: in
             return False, "Магазин не найден"
         now = utcnow()
         if action == "extend":
+            current_paid_until = aware(shop.paid_until)
+            if current_paid_until and current_paid_until.year >= 9999:
+                return False, "У магазина уже бессрочная подписка"
             ends = [aware(d) for d in (shop.trial_ends_at, shop.paid_until) if d]
             shop.paid_until = max([now, *ends]) + timedelta(days=days or 0)
         elif action == "set_expiry":
@@ -642,7 +645,11 @@ async def st_subscriptions_search(message: Message, state: FSMContext):
                 owner.username or "" if owner else "",
                 owner.first_name or "" if owner else "",
             ]).casefold()
-            if query in haystack:
+            if query.isdigit():
+                matched = query in (str(shop.id), str(owner.telegram_id) if owner else "")
+            else:
+                matched = query in haystack
+            if matched:
                 matches.append((shop, name or shop.slug))
     if not matches:
         await message.answer(
