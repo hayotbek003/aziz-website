@@ -591,8 +591,8 @@ async def cmd_subscriptions(message: Message, state: FSMContext):
         return
     await state.set_state(AdminSubscription.search)
     await message.answer(
-        "🧾 <b>Ручное управление подписками</b>\n"
-        "Отправь ID магазина, его адрес (slug), название или Telegram ID владельца.",
+        "🧾 <b>Управление подписками</b>\n"
+        "Отправь @username владельца, Telegram ID владельца, ID или адрес магазина.",
         reply_markup=kb([btn("✖️ Отмена", "subadm:cancel")]),
     )
 
@@ -604,7 +604,7 @@ async def cb_subscriptions_search(cq: CallbackQuery, state: FSMContext):
         return
     await state.set_state(AdminSubscription.search)
     await cq.message.answer(
-        "🔎 Введи ID магазина, его адрес (slug), название или Telegram ID владельца.",
+        "🔎 Введи @username владельца, Telegram ID владельца, ID или адрес магазина.",
         reply_markup=kb([btn("✖️ Отмена", "subadm:cancel")]),
     )
     await cq.answer()
@@ -856,8 +856,7 @@ async def cmd_admin(message: Message):
     rows = []
     if _is_subscription_admin(user.telegram_id):
         rows.append([btn("🧾 Управление подписками", "subadm:search")])
-    rows.append([web("Открыть веб-админку", "/admin")])
-    await message.answer("🛡 <b>Админ-панель платформы</b>", reply_markup=kb(*rows))
+    await message.answer("🛡 <b>Меню администратора</b>", reply_markup=kb(*rows))
 
 
 # ---------- Консультант: Claude, если задан ключ, иначе бесплатные ответы по ключевым словам ----------
