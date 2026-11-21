@@ -623,6 +623,8 @@ async def st_subscriptions_search(message: Message, state: FSMContext):
         await state.clear()
         return
     query = (message.text or "").strip().casefold()
+    if not query.isdigit():
+        query = query.lstrip("@")
     if not query:
         await message.answer("Введи ID, адрес, название или Telegram ID владельца.")
         return
@@ -834,7 +836,7 @@ async def cb_subscription_history(cq: CallbackQuery):
         labels = {"extend": "Продление", "set_expiry": "Установка даты", "lifetime": "Бессрочно", "revoke": "Отзыв доступа"}
         for row in rows:
             admin = admins.get(row.admin_user_id)
-            by = admin.username and f"@{admin.username}" or (admin.first_name if admin else "админ")
+            by = f"@{admin.username}" if admin and admin.username else (admin.first_name if admin else "админ")
             details = f" на {row.days} дн." if row.action == "extend" else (f" до {fmt_date(row.expires_at.isoformat())}" if row.expires_at and row.action == "set_expiry" else "")
             lines.append(
                 f"• <b>{labels.get(row.action, row.action)}</b>{details}\n"
