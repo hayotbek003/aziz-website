@@ -1,5 +1,6 @@
 """Webhook платформенного бота, webhook ботов продавцов и cron-задачи (сроки аренды)."""
 import hmac
+import os
 import logging
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
@@ -37,6 +38,37 @@ async def platform_webhook(request: Request, x_telegram_bot_api_secret_token: st
     finally:
         await bot.session.close()
     return {"ok": True}
+
+
+
+
+@router.get("/bot/internal/activate-preview")
+async def activate_preview_bot(secret: str):
+    """Temporary one-time trigger to route the Telegram bot to an isolated preview backend."""
+    expected = os.getenv("BOT_MIGRATION_SECRET", "")
+    target = os.getenv("BOT_MIGRATION_WEBHOOK_URL", "")
+    bypass = os.getenv("BOT_PREVIEW_BYPASS", "")
+    if not expected or not hmac.compare_digest(secret, expected):
+        raise HTTPException(404, "not found")
+    if not settings.bot_token or not settings.webhook_secret or not target or not bypass:
+        raise HTTPException(503, "preview migration is not configured")
+    webhook_url = f"{target}?x-vercel-protection-bypass={bypass}"
+    bot = make_bot()
+    try:
+        await bot.set_webhook(
+            url=webhook_url,
+            secret_token=settings.webhook_secret,
+            allowed_updates=["message", "callback_query", "pre_checkout_query"],
+            drop_pending_updates=False,
+        )
+        info = await bot.get_webhook_info()
+        return {
+            "ok": True,
+            "pending_update_count": info.pending_update_count,
+            "has_last_error": bool(info.last_error_message),
+        }
+    finally:
+        await bot.session.close()
 
 
 @router.post("/bot/seller/{shop_id}")
