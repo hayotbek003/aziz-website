@@ -14,7 +14,7 @@ function SubscriptionAdmin() {
  const {toast,confirm}=useUi(); const [shops,setShops]=useState<ShopSummary[]>([]); const [q,setQ]=useState("");
  const [busy,setBusy]=useState<number|null>(null); const [selected,setSelected]=useState<number|null>(null);
  const [history,setHistory]=useState<History[]>([]); const [days,setDays]=useState("30"); const [date,setDate]=useState(""); const [reason,setReason]=useState("");
- const load=useCallback(async()=>{try{const r=await api<{shops:ShopSummary[]}>("/api/admin/shops?q="+encodeURIComponent(q));setShops(r.shops);}catch(e){toast((e as Error).message,"err");}},[q,toast]);
+ const load=useCallback(async()=>{try{await api<{allowed:boolean}>("/api/admin/subscription-access");const r=await api<{shops:ShopSummary[]}>("/api/admin/shops?q="+encodeURIComponent(q));setShops(r.shops);}catch(e){setShops([]);toast((e as Error).message,"err");}},[q,toast]);
  useEffect(()=>{const t=setTimeout(load,250);return()=>clearTimeout(t);},[load]);
  const loadHistory=async(id:number)=>{setSelected(id);try{const r=await api<{history:History[]}>("/api/admin/shops/"+id+"/subscription/history");setHistory(r.history);}catch(e){toast((e as Error).message,"err");}};
  const apply=async(id:number,action:string,n?:number,expiry?:string)=>{if(action==="revoke"&&!(await confirm("Отозвать доступ? Магазин станет недоступен.",{danger:true,ok:"Отозвать"})))return;setBusy(id);try{await api("/api/admin/shops/"+id+"/subscription",{body:{action,days:n,expires_at:expiry,reason,notify_owner:true}});toast("Подписка обновлена без создания платежа");setReason("");await load();await loadHistory(id);}catch(e){toast((e as Error).message,"err");}finally{setBusy(null);}};
