@@ -5,11 +5,11 @@ from pydantic import BaseModel, Field, model_validator
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..db import get_session
-from ..deps import admin_user
+from ..deps import main_admin_user
 from ..models import Shop, SubscriptionAction, User, utcnow
 from ..services import aware, html_escape, notify, shop_state, shop_summary
 
-router = APIRouter(prefix="/api/admin", tags=["admin-subscriptions"], dependencies=[Depends(admin_user)])
+router = APIRouter(prefix="/api/admin", tags=["admin-subscriptions"], dependencies=[Depends(main_admin_user)])
 
 class ManualSubscriptionIn(BaseModel):
     action: str = Field(pattern="^(extend|set_expiry|lifetime|revoke)$")
