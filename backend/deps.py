@@ -69,3 +69,10 @@ async def category_in_shop(session: AsyncSession, category_id: int | None, shop_
     if not cid:
         raise HTTPException(400, "Категория не принадлежит магазину")
     return cid
+
+
+async def main_admin_user(user: User = Depends(current_user)) -> User:
+    """Only configured platform owner/super-admins may manage manual subscriptions."""
+    if user.telegram_id not in settings.admin_ids:
+        raise HTTPException(403, "Доступ только для главного администратора")
+    return user
