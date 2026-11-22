@@ -629,7 +629,7 @@ async def st_subscriptions_search(message: Message, state: FSMContext):
         await message.answer("Введи ID, адрес, название, username владельца или username Telegram-бота магазина.")
         return
     async with SessionLocal() as s:
-        shops = (await s.scalars(select(Shop).order_by(Shop.id.desc()).limit(500))).all()
+        shops = (await s.scalars(select(Shop).order_by(Shop.id.desc()))).all()
         owner_ids = {shop.owner_id for shop in shops}
         owners = {
             u.id: u for u in (
