@@ -592,7 +592,7 @@ async def cmd_subscriptions(message: Message, state: FSMContext):
     await state.set_state(AdminSubscription.search)
     await message.answer(
         "🧾 <b>Управление подписками</b>\n"
-        "Отправь @username владельца, Telegram ID владельца, ID или адрес магазина.",
+        "Отправь @username владельца или Telegram-бота магазина, Telegram ID владельца, ID или адрес магазина.",
         reply_markup=kb([btn("✖️ Отмена", "subadm:cancel")]),
     )
 
@@ -604,7 +604,7 @@ async def cb_subscriptions_search(cq: CallbackQuery, state: FSMContext):
         return
     await state.set_state(AdminSubscription.search)
     await cq.message.answer(
-        "🔎 Введи @username владельца, Telegram ID владельца, ID или адрес магазина.",
+        "🔎 Введи @username владельца или Telegram-бота магазина, Telegram ID владельца, ID или адрес магазина.",
         reply_markup=kb([btn("✖️ Отмена", "subadm:cancel")]),
     )
     await cq.answer()
@@ -624,9 +624,9 @@ async def st_subscriptions_search(message: Message, state: FSMContext):
         return
     query = (message.text or "").strip().casefold()
     if not query.isdigit():
-        query = query.lstrip("@")
+        query = query.removeprefix("https://t.me/").removeprefix("http://t.me/").removeprefix("t.me/").lstrip("@").rstrip("/")
     if not query:
-        await message.answer("Введи ID, адрес, название или Telegram ID владельца.")
+        await message.answer("Введи ID, адрес, название, username владельца или username Telegram-бота магазина.")
         return
     async with SessionLocal() as s:
         shops = (await s.scalars(select(Shop).order_by(Shop.id.desc()).limit(500))).all()
@@ -642,10 +642,11 @@ async def st_subscriptions_search(message: Message, state: FSMContext):
             config = shop.published_config or shop.draft_config or {}
             name = str(config.get("name") or "")
             haystack = " ".join([
-                str(shop.id), shop.slug, name,
+                str(shop.id), shop.slug, name, shop.bot_username or "",
                 str(owner.telegram_id if owner else ""),
                 owner.username or "" if owner else "",
                 owner.first_name or "" if owner else "",
+                owner.last_name or "" if owner else "",
             ]).casefold()
             if query.isdigit():
                 matched = query in (str(shop.id), str(owner.telegram_id) if owner else "")
