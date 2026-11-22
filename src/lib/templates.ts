@@ -106,6 +106,17 @@ export function demoStore(key: string, name?: string): StoreData | null {
     description: "",
     sort: i,
   }));
+  const sampleImages: Record<string, string[]> = {
+    fashion: [
+      "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1542291026-7eec264c27ff?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1588850561407-ed78c282e89b?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1595777457583-95e059d581b8?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1542272604-787c3835535d?auto=format&fit=crop&w=900&q=85",
+      "https://images.unsplash.com/photo-1511499767150-a48a237f0083?auto=format&fit=crop&w=900&q=85",
+    ],
+  };
+  const productImages = sampleImages[key] || [];
   const products: Product[] = t.products.map((p, i) => ({
     id: `p${i}`,
     categoryId: categories[p.cat]?.id ?? null,
@@ -115,7 +126,7 @@ export function demoStore(key: string, name?: string): StoreData | null {
     priceFrom: !!p.from,
     description: p.desc || "",
     specs: (p.specs || []).map(([k, v]) => ({ k, v })),
-    images: [],
+    images: productImages[i] ? [productImages[i]] : [],
     icon: p.icon,
     isPopular: !!p.popular,
     inStock: true,
