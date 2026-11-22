@@ -4,11 +4,11 @@ import os
 import logging
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Request
-from sqlalchemy import or_, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ..config import settings
-from ..db import SessionLocal, ensure_db, get_session
+from ..db import ensure_db, get_session
 from ..models import Shop, User
 from ..security import decrypt_secret
 from ..services import html_escape, make_bot, notify, shop_state
@@ -40,37 +40,6 @@ async def platform_webhook(request: Request, x_telegram_bot_api_secret_token: st
     return {"ok": True}
 
 
-
-
-@router.get("/bot/internal/debug-shop-search")
-async def debug_shop_search(q: str, secret: str, session: AsyncSession = Depends(get_session)):
-    """Temporary protected diagnostic for subscription search; remove after inspection."""
-    expected = os.getenv("BOT_MIGRATION_SECRET", "")
-    if not expected or not hmac.compare_digest(secret, expected):
-        raise HTTPException(404, "not found")
-    query = q.strip().casefold().lstrip("@")
-    rows = (await session.execute(
-        select(Shop, User).join(User, Shop.owner_id == User.id)
-    )).all()
-    matches = []
-    for shop, owner in rows:
-        config = shop.published_config or shop.draft_config or {}
-        values = [
-            str(shop.id), shop.slug, str(config.get("name") or ""),
-            shop.bot_username or "", str(owner.telegram_id),
-            owner.username or "", owner.first_name or "", owner.last_name or "",
-        ]
-        haystack = " ".join(values).casefold()
-        if query in haystack:
-            matches.append({
-                "shop_id": shop.id,
-                "slug": shop.slug,
-                "name": config.get("name"),
-                "bot_username": shop.bot_username,
-                "owner_username": owner.username,
-                "owner_telegram_id": owner.telegram_id,
-            })
-    return {"total_shops": len(rows), "query": query, "matches": matches[:20]}
 
 
 @router.get("/bot/internal/activate-preview")
